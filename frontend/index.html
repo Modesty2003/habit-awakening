@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>觉醒系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════
+   BASE & RESET
+═══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #111418;
+  --bg2:       #1a1f27;
+  --bg3:       #232b36;
+  --card:      #1e2530;
+  --border:    #2d3748;
+  --orange:    #ff6b35;
+  --orange-d:  #e85520;
+  --yellow:    #ffd700;
+  --blue:      #4a9eff;
+  --green:     #34c759;
+  --red:       #ff3b30;
+  --purple:    #af52de;
+  --text:      #f0f2f5;
+  --muted:     #8a9bb0;
+  --glow:      rgba(255, 107, 53, 0.35);
+  --glow-y:    rgba(255, 215, 0, 0.25);
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans SC', system-ui, sans-serif;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════ */
+#app {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  grid-template-rows: 56px 1fr;
+  height: 100vh;
+}
+
+/* ── TOPBAR ─────────────────────────────────── */
+#topbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+}
+
+#topbar .logo {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--orange), var(--yellow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#topbar .tagline {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+
+#topbar .spacer { flex: 1; }
+
+#topbar .date-chip {
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--bg3);
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+
+/* ── SIDEBAR ────────────────────────────────── */
+#sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+  overflow-y: auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 20px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+  letter-spacing: 0.5px;
+}
+
+.nav-item:hover { color: var(--text); background: rgba(255,107,53,0.06); }
+.nav-item.active {
+  color: var(--orange);
+  border-left-color: var(--orange);
+  background: rgba(255,107,53,0.1);
+}
+
+.nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+/* ── MAIN CONTENT ───────────────────────────── */
+#main {
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── PAGE ───────────────────────────────────── */
+.page { display: none; flex-direction: column; gap: 16px; }
+.page.active { display: flex; }
+
+/* ═══════════════════════════════════════════════
+   CARDS
+═══════════════════════════════════════════════ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.card-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD PAGE
+═══════════════════════════════════════════════ */
+#page-dashboard .dashboard-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr 220px;
+  gap: 16px;
+  align-items: start;
+}
+
+/* ── CHARACTER PANEL ───────────────────────── */
+.char-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.char-avatar-wrap {
+  text-align: center;
+  padding: 20px 0 10px;
+}
+
+.char-avatar {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 10px;
+  background: linear-gradient(135deg, var(--orange), var(--yellow));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  box-shadow: 0 0 24px var(--glow);
+  position: relative;
+}
+
+.char-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--orange);
+  opacity: 0.4;
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: 0.4; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+
+.char-name {
+  font-size: 16px;
+  font-weight: 900;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.char-title {
+  font-size: 11px;
+  color: var(--yellow);
+  text-align: center;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+.level-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.level-badge {
+  background: linear-gradient(135deg, var(--orange), var(--orange-d));
+  color: white;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 2px 10px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+}
+
+.exp-label { font-size: 11px; color: var(--muted); }
+
+.exp-bar-wrap {
+  background: var(--bg3);
+  border-radius: 4px;
+  height: 8px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.exp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--orange), var(--yellow));
+  border-radius: 4px;
+  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 8px var(--glow);
+}
+
+.exp-text { font-size: 11px; color: var(--muted); text-align: right; }
+
+/* 属性栏 */
+.stats-section {}
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+.stat-name {
+  font-size: 11px;
+  font-weight: 700;
+  width: 32px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+.stat-bar-bg {
+  flex: 1;
+  background: var(--bg3);
+  border-radius: 3px;
+  height: 5px;
+  overflow: hidden;
+}
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s ease;
+}
+.stat-score {
+  font-size: 11px;
+  color: var(--muted);
+  width: 28px;
+  text-align: right;
+}
+
+/* 连击 */
+.streak-display {
+  text-align: center;
+  padding: 12px;
+  background: var(--bg3);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.streak-fire { font-size: 28px; }
+.streak-count {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--orange);
+  line-height: 1;
+}
+.streak-label { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 1px; }
+
+/* ── MISSION BOARD ─────────────────────────── */
+.mission-board {}
+
+.system-msg {
+  background: linear-gradient(135deg, rgba(0,255,127,0.06), rgba(0,200,255,0.04));
+  border: 1px solid rgba(0,255,127,0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #7fffd4;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  margin-bottom: 14px;
+  line-height: 1.6;
+  letter-spacing: 0.3px;
+}
+
+.board-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.board-title {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: var(--orange);
+}
+
+.completion-chip {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--bg3);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.habit-list { display: flex; flex-direction: column; gap: 10px; }
+
+.habit-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  background: var(--bg3);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  transition: all 0.25s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.habit-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--orange);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.habit-card:hover::before { opacity: 1; }
+.habit-card:hover { border-color: rgba(255,107,53,0.3); transform: translateX(2px); }
+
+.habit-card.done {
+  border-color: rgba(52,199,89,0.3);
+  background: rgba(52,199,89,0.05);
+}
+.habit-card.done::before { background: var(--green); opacity: 1; }
+
+.habit-icon { font-size: 22px; width: 30px; text-align: center; }
+
+.habit-info { flex: 1; }
+.habit-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.habit-meta { font-size: 11px; color: var(--muted); }
+.habit-streak { color: var(--orange); font-weight: 700; }
+
+.habit-right { display: flex; align-items: center; gap: 10px; }
+
+.exp-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--yellow);
+  background: rgba(255,215,0,0.1);
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,215,0,0.2);
+  white-space: nowrap;
+}
+
+.check-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+  color: var(--muted);
+}
+
+.check-btn:hover { border-color: var(--orange); color: var(--orange); transform: scale(1.1); }
+.check-btn.done { border-color: var(--green); background: var(--green); color: white; }
+
+/* EXP 浮动动画 */
+.exp-float {
+  position: fixed;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--yellow);
+  pointer-events: none;
+  animation: float-up 1.2s ease-out forwards;
+  z-index: 9999;
+  text-shadow: 0 0 10px var(--yellow);
+}
+
+@keyframes float-up {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  50%  { opacity: 1; transform: translateY(-40px) scale(1.2); }
+  100% { opacity: 0; transform: translateY(-80px) scale(0.8); }
+}
+
+/* ── RIGHT PANEL ───────────────────────────── */
+.right-col { display: flex; flex-direction: column; gap: 14px; }
+
+/* 势头仪表盘 */
+.momentum-gauge { text-align: center; }
+.gauge-wrap { position: relative; width: 120px; height: 120px; margin: 8px auto; }
+.gauge-svg { width: 120px; height: 120px; transform: rotate(-90deg); }
+.gauge-bg { fill: none; stroke: var(--bg3); stroke-width: 10; }
+.gauge-fill {
+  fill: none;
+  stroke: url(#gaugeGrad);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s ease;
+}
+.gauge-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.gauge-val {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--orange);
+  line-height: 1;
+}
+.gauge-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+
+/* BOSS 战 */
+.boss-card { cursor: default; }
+.boss-header { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.boss-icon { font-size: 18px; }
+.boss-name { font-size: 13px; font-weight: 900; color: var(--red); }
+.boss-desc { font-size: 11px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+.boss-progress-bg {
+  background: var(--bg3);
+  border-radius: 4px;
+  height: 8px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.boss-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s ease;
+}
+.boss-rate { font-size: 11px; color: var(--muted); text-align: right; }
+.boss-win { color: var(--green); font-weight: 700; }
+.boss-fail { color: var(--red); }
+
+/* ═══════════════════════════════════════════════
+   ANALYTICS PAGE
+═══════════════════════════════════════════════ */
+#page-analytics .analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+#page-analytics .full-width { grid-column: 1 / -1; }
+
+.chart-wrap { position: relative; height: 200px; }
+.chart-wrap canvas { border-radius: 6px; }
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.stat-card {
+  background: var(--bg3);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.stat-card .val {
+  font-size: 22px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+.stat-card .lbl { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+
+/* 分类属性卡 */
+.cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cat-item {
+  background: var(--bg3);
+  border-radius: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+}
+.cat-header { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.cat-icon { font-size: 16px; }
+.cat-name { font-size: 13px; font-weight: 700; }
+.cat-score-row { display: flex; align-items: center; gap: 8px; }
+.cat-bar-bg { flex: 1; background: var(--bg); border-radius: 3px; height: 6px; overflow: hidden; }
+.cat-bar-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+.cat-pct { font-size: 12px; font-weight: 700; min-width: 32px; text-align: right; }
+
+/* ═══════════════════════════════════════════════
+   ACHIEVEMENTS PAGE
+═══════════════════════════════════════════════ */
+#page-achievements .ach-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.ach-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: all 0.25s;
+}
+
+.ach-card.unlocked {
+  border-color: rgba(255,215,0,0.3);
+  background: linear-gradient(135deg, rgba(255,215,0,0.05), rgba(255,107,53,0.05));
+}
+
+.ach-card.locked { opacity: 0.4; filter: grayscale(0.8); }
+
+.ach-icon {
+  font-size: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.ach-body {}
+.ach-name { font-size: 13px; font-weight: 900; margin-bottom: 4px; }
+.ach-desc { font-size: 11px; color: var(--muted); line-height: 1.5; margin-bottom: 6px; }
+.ach-date { font-size: 10px; color: var(--yellow); font-weight: 700; }
+.ach-locked-lbl { font-size: 10px; color: var(--muted); }
+
+/* ═══════════════════════════════════════════════
+   SETTINGS PAGE
+═══════════════════════════════════════════════ */
+#page-settings .settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 500px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--orange);
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary {
+  background: var(--orange);
+  color: white;
+}
+.btn-primary:hover { background: var(--orange-d); transform: translateY(-1px); }
+
+.btn-ghost {
+  background: var(--bg3);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { border-color: var(--orange); color: var(--orange); }
+
+.btn-danger { background: rgba(255,59,48,0.15); color: var(--red); border: 1px solid rgba(255,59,48,0.3); }
+.btn-danger:hover { background: rgba(255,59,48,0.25); }
+
+/* 习惯管理列表 */
+.habit-mgmt-list { display: flex; flex-direction: column; gap: 8px; }
+.habit-mgmt-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg3);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.habit-mgmt-icon { font-size: 18px; }
+.habit-mgmt-name { flex: 1; font-size: 13px; font-weight: 500; }
+.habit-mgmt-cat {
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* ═══════════════════════════════════════════════
+   TOAST / ACHIEVEMENT POPUP
+═══════════════════════════════════════════════ */
+#toast-container {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast {
+  background: linear-gradient(135deg, #1a2535, #2a1a0a);
+  border: 1px solid var(--yellow);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 260px;
+  animation: slide-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 20px var(--glow-y);
+}
+
+.toast.fadeout { animation: slide-out 0.35s ease-in forwards; }
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(80px) scale(0.8); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes slide-out {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(80px); }
+}
+
+.toast-icon { font-size: 24px; }
+.toast-body {}
+.toast-title { font-size: 13px; font-weight: 900; color: var(--yellow); margin-bottom: 2px; }
+.toast-desc { font-size: 11px; color: var(--muted); }
+
+/* ═══════════════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ═══════════════════════════════════════════════
+   UTILITY
+═══════════════════════════════════════════════ */
+.text-orange { color: var(--orange); }
+.text-yellow { color: var(--yellow); }
+.text-green  { color: var(--green); }
+.text-red    { color: var(--red); }
+.text-muted  { color: var(--muted); }
+.flex        { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.gap-8       { gap: 8px; }
+.mt-8        { margin-top: 8px; }
+.fw-900      { font-weight: 900; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── TOPBAR ─────────────────────────────── -->
+  <div id="topbar">
+    <span class="logo">⚡ 觉醒系统</span>
+    <span class="tagline">AWAKENING SYSTEM v1.0</span>
+    <div class="spacer"></div>
+    <span class="date-chip" id="today-date"></span>
+  </div>
+
+  <!-- ── SIDEBAR ────────────────────────────── -->
+  <nav id="sidebar">
+    <div class="nav-item active" data-page="dashboard">
+      <span class="nav-icon">🏠</span> 主界面
+    </div>
+    <div class="nav-item" data-page="analytics">
+      <span class="nav-icon">📊</span> 战况报告
+    </div>
+    <div class="nav-item" data-page="achievements">
+      <span class="nav-icon">🏆</span> 成就殿堂
+    </div>
+    <div class="nav-item" data-page="settings">
+      <span class="nav-icon">⚙️</span> 系统设置
+    </div>
+  </nav>
+
+  <!-- ── MAIN ───────────────────────────────── -->
+  <main id="main">
+
+    <!-- ╔══ DASHBOARD PAGE ══╗ -->
+    <div id="page-dashboard" class="page active">
+      <div class="dashboard-grid">
+
+        <!-- 角色面板 -->
+        <div class="char-panel">
+          <div class="card">
+            <div class="char-avatar-wrap">
+              <div class="char-avatar" id="char-emoji">🦅</div>
+              <div class="char-name" id="char-name">觉醒者</div>
+              <div class="char-title" id="char-title">普通人</div>
+            </div>
+
+            <div class="level-row">
+              <span class="level-badge" id="char-level">Lv. 1</span>
+              <span class="exp-label" id="exp-label">0 / 250 EXP</span>
+            </div>
+            <div class="exp-bar-wrap">
+              <div class="exp-bar-fill" id="exp-bar" style="width:0%"></div>
+            </div>
+
+            <div class="stats-section mt-8">
+              <div class="card-title">属性</div>
+              <div class="stat-row">
+                <span class="stat-name" style="color:#4a9eff">智慧</span>
+                <div class="stat-bar-bg"><div class="stat-bar-fill" id="stat-study" style="background:#4a9eff;width:0%"></div></div>
+                <span class="stat-score" id="stat-study-val">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-name" style="color:#ff6b35">体能</span>
+                <div class="stat-bar-bg"><div class="stat-bar-fill" id="stat-exercise" style="background:#ff6b35;width:0%"></div></div>
+                <span class="stat-score" id="stat-exercise-val">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-name" style="color:#ffd700">专注</span>
+                <div class="stat-bar-bg"><div class="stat-bar-fill" id="stat-focus" style="background:#ffd700;width:0%"></div></div>
+                <span class="stat-score" id="stat-focus-val">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-name" style="color:#34c759">意志</span>
+                <div class="stat-bar-bg"><div class="stat-bar-fill" id="stat-reflection" style="background:#34c759;width:0%"></div></div>
+                <span class="stat-score" id="stat-reflection-val">0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card streak-display">
+            <div class="streak-fire">🔥</div>
+            <div class="streak-count" id="streak-count">0</div>
+            <div class="streak-label">天全局连击</div>
+          </div>
+        </div>
+
+        <!-- 今日任务 -->
+        <div class="mission-board card">
+          <div class="system-msg" id="system-msg">【系统】正在加载宿主数据...</div>
+          <div class="board-header">
+            <div class="board-title">══ 今日任务 ══</div>
+            <div class="completion-chip" id="completion-chip">0 / 0</div>
+          </div>
+          <div class="habit-list" id="habit-list">
+            <div style="color:var(--muted);text-align:center;padding:30px">加载中...</div>
+          </div>
+        </div>
+
+        <!-- 右侧面板 -->
+        <div class="right-col">
+
+          <!-- 势头仪表盘 -->
+          <div class="card momentum-gauge">
+            <div class="card-title">势头指数</div>
+            <div class="gauge-wrap">
+              <svg class="gauge-svg" viewBox="0 0 120 120">
+                <defs>
+                  <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#ff6b35"/>
+                    <stop offset="100%" style="stop-color:#ffd700"/>
+                  </linearGradient>
+                </defs>
+                <circle class="gauge-bg" cx="60" cy="60" r="50"
+                  stroke-dasharray="314" stroke-dashoffset="0"/>
+                <circle class="gauge-fill" cx="60" cy="60" r="50"
+                  id="gauge-circle"
+                  stroke-dasharray="314" stroke-dashoffset="314"/>
+              </svg>
+              <div class="gauge-center">
+                <span class="gauge-val" id="gauge-val">0</span>
+                <span class="gauge-lbl">MOMENTUM</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- BOSS 战 -->
+          <div class="card boss-card">
+            <div class="card-title">本周 BOSS 战</div>
+            <div class="boss-header">
+              <span class="boss-icon">👹</span>
+              <span class="boss-name" id="boss-name">---</span>
+            </div>
+            <div class="boss-desc" id="boss-desc">---</div>
+            <div class="boss-progress-bg">
+              <div class="boss-progress-fill" id="boss-bar" style="width:0%"></div>
+            </div>
+            <div class="boss-rate">
+              <span id="boss-rate-text">0%</span> / 目标 80%
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ╔══ ANALYTICS PAGE ══╗ -->
+    <div id="page-analytics" class="page">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="val text-orange" id="an-momentum">--</div>
+          <div class="lbl">势头指数</div>
+        </div>
+        <div class="stat-card">
+          <div class="val text-yellow" id="an-consistency">--</div>
+          <div class="lbl">30天坚持率</div>
+        </div>
+        <div class="stat-card">
+          <div class="val text-green" id="an-streak">--</div>
+          <div class="lbl">当前连击</div>
+        </div>
+        <div class="stat-card">
+          <div class="val text-blue" id="an-total-exp">--</div>
+          <div class="lbl">累计 EXP</div>
+        </div>
+      </div>
+
+      <div class="card full-width">
+        <div class="card-title">系统分析报告</div>
+        <div class="system-msg" id="an-system-msg" style="margin:0">加载中...</div>
+      </div>
+
+      <div class="analytics-grid">
+        <div class="card">
+          <div class="card-title">最近 30 天完成趋势</div>
+          <div class="chart-wrap"><canvas id="chart-history"></canvas></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">属性雷达图</div>
+          <div class="chart-wrap"><canvas id="chart-radar"></canvas></div>
+        </div>
+
+        <div class="card full-width">
+          <div class="card-title">四维属性详情</div>
+          <div class="cat-grid" id="cat-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ╔══ ACHIEVEMENTS PAGE ══╗ -->
+    <div id="page-achievements" class="page">
+      <div class="card">
+        <div class="card-title">成就殿堂</div>
+        <div class="ach-grid" id="ach-grid">
+          <div style="color:var(--muted);padding:20px">加载中...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ╔══ SETTINGS PAGE ══╗ -->
+    <div id="page-settings" class="page">
+      <div class="card" style="max-width:500px">
+        <div class="card-title">宿主信息</div>
+        <div class="settings-form">
+          <div class="form-group">
+            <label>宿主名称</label>
+            <input type="text" id="set-name" placeholder="输入你的名字" maxlength="12" />
+          </div>
+          <button class="btn btn-primary" onclick="saveName()">保存名称</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">习惯管理</div>
+        <div class="habit-mgmt-list" id="habit-mgmt-list" style="margin-bottom:16px"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px;align-items:end">
+          <div class="form-group" style="margin:0">
+            <label>名称</label>
+            <input type="text" id="new-habit-name" placeholder="读书 30分钟" />
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>类型</label>
+            <select id="new-habit-cat">
+              <option value="study">📚 读书/学习</option>
+              <option value="exercise">🏃 运动/健身</option>
+              <option value="focus">⚡ 深度专注</option>
+              <option value="reflection">✍️ 自我反思</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>图标</label>
+            <input type="text" id="new-habit-icon" placeholder="📖" style="width:60px;text-align:center" maxlength="2"/>
+          </div>
+          <button class="btn btn-primary" style="align-self:end" onclick="addHabit()">+ 添加</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── TOAST CONTAINER ── -->
+<div id="toast-container"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  API
+// ═══════════════════════════════════════════════
+const API = {
+  get: url => fetch(url).then(r => r.json()),
+  post: (url, body) => fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) }).then(r => r.json()),
+  put: (url, body) => fetch(url, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) }).then(r => r.json()),
+  delete: url => fetch(url, { method: 'DELETE' }).then(r => r.json()),
+  patch: (url, body) => fetch(url, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) }).then(r => r.json()),
+};
+
+// ═══════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    item.classList.add('active');
+    const page = item.dataset.page;
+    document.getElementById('page-' + page).classList.add('active');
+    if (page === 'analytics') loadAnalytics();
+    if (page === 'achievements') loadAchievements();
+    if (page === 'settings') loadSettings();
+  });
+});
+
+// ═══════════════════════════════════════════════
+//  DATE
+// ═══════════════════════════════════════════════
+document.getElementById('today-date').textContent =
+  new Date().toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+
+// ═══════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════
+let radarChart = null;
+let histChart  = null;
+
+async function loadDashboard() {
+  const [user, today, analytics] = await Promise.all([
+    API.get('/api/user'),
+    API.get('/api/today'),
+    API.get('/api/analytics'),
+  ]);
+
+  // Character panel
+  document.getElementById('char-name').textContent = user.name;
+  document.getElementById('char-title').textContent = user.title;
+  document.getElementById('char-level').textContent = 'Lv. ' + user.level;
+  document.getElementById('exp-label').textContent = user.current_exp + ' / ' + user.exp_needed + ' EXP';
+  document.getElementById('exp-bar').style.width = user.progress + '%';
+  document.getElementById('streak-count').textContent = user.global_streak;
+
+  // Cat stats
+  const cs = analytics.category_stats;
+  const cats = ['study','exercise','focus','reflection'];
+  cats.forEach(cat => {
+    const el = document.getElementById('stat-' + cat);
+    const vl = document.getElementById('stat-' + cat + '-val');
+    if (el) { el.style.width = cs[cat].score + '%'; }
+    if (vl) { vl.textContent = cs[cat].score; }
+  });
+
+  // System message
+  document.getElementById('system-msg').textContent = analytics.system_message;
+
+  // Habit list
+  renderHabitList(today.habits);
+
+  // Momentum gauge
+  const mom = analytics.momentum;
+  document.getElementById('gauge-val').textContent = mom;
+  const circumference = 314;
+  const offset = circumference - (mom / 100) * circumference;
+  document.getElementById('gauge-circle').style.strokeDashoffset = offset;
+
+  // Boss battle
+  const boss = analytics.weekly_boss;
+  document.getElementById('boss-name').textContent = boss.boss_name;
+  document.getElementById('boss-desc').textContent = boss.boss_desc;
+  const bossBar = document.getElementById('boss-bar');
+  const rate = boss.rate;
+  bossBar.style.width = Math.min(rate, 100) + '%';
+  bossBar.style.background = rate >= 80
+    ? 'linear-gradient(90deg,#34c759,#00ff7f)'
+    : 'linear-gradient(90deg,#ff3b30,#ff6b35)';
+  const rateText = document.getElementById('boss-rate-text');
+  rateText.textContent = rate + '%';
+  rateText.className = rate >= 80 ? 'boss-win' : 'boss-fail';
+}
+
+function renderHabitList(habits) {
+  const list = document.getElementById('habit-list');
+  const done = habits.filter(h => h.completed).length;
+  document.getElementById('completion-chip').textContent = done + ' / ' + habits.length;
+
+  if (!habits.length) {
+    list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:30px">前往「系统设置」添加习惯</div>';
+    return;
+  }
+
+  list.innerHTML = habits.map(h => `
+    <div class="habit-card ${h.completed ? 'done' : ''}" id="hcard-${h.id}" onclick="toggleHabit(${h.id}, this)">
+      <span class="habit-icon">${h.icon}</span>
+      <div class="habit-info">
+        <div class="habit-name">${h.name}</div>
+        <div class="habit-meta">
+          ${h.streak > 0 ? `<span class="habit-streak">🔥 ${h.streak} 连击</span>` : '今天还没打卡'}
+        </div>
+      </div>
+      <div class="habit-right">
+        <span class="exp-badge">+${h.exp_preview} EXP</span>
+        <button class="check-btn ${h.completed ? 'done' : ''}">${h.completed ? '✓' : ''}</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function toggleHabit(habitId, cardEl) {
+  const result = await API.post('/api/checkin/' + habitId);
+
+  // EXP float animation
+  if (result.exp_delta > 0) {
+    const rect = cardEl.getBoundingClientRect();
+    showExpFloat('+' + result.exp_delta + ' EXP', rect.right - 80, rect.top + 10);
+  }
+
+  // New achievements
+  if (result.new_achievements && result.new_achievements.length > 0) {
+    result.new_achievements.forEach(ach => showAchievementToast(ach));
+  }
+
+  // Refresh
+  await loadDashboard();
+}
+
+function showExpFloat(text, x, y) {
+  const el = document.createElement('div');
+  el.className = 'exp-float';
+  el.textContent = text;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+function showAchievementToast(ach) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `
+    <span class="toast-icon">${ach.icon}</span>
+    <div class="toast-body">
+      <div class="toast-title">🎉 成就解锁！${ach.name}</div>
+      <div class="toast-desc">${ach.description}</div>
+    </div>
+  `;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('fadeout');
+    setTimeout(() => toast.remove(), 400);
+  }, 3500);
+}
+
+// ═══════════════════════════════════════════════
+//  ANALYTICS
+// ═══════════════════════════════════════════════
+async function loadAnalytics() {
+  const [analytics, user] = await Promise.all([
+    API.get('/api/analytics'),
+    API.get('/api/user'),
+  ]);
+
+  document.getElementById('an-momentum').textContent = analytics.momentum;
+  document.getElementById('an-consistency').textContent = analytics.consistency + '%';
+  document.getElementById('an-streak').textContent = analytics.global_streak + ' 天';
+  document.getElementById('an-total-exp').textContent = user.total_exp;
+  document.getElementById('an-system-msg').textContent = analytics.system_message;
+
+  // History chart
+  const hist = analytics.daily_history;
+  const histLabels = hist.map(d => d.date.slice(5));
+  const histData = hist.map(d => d.total > 0 ? Math.round(d.done / d.total * 100) : 0);
+
+  if (histChart) histChart.destroy();
+  histChart = new Chart(document.getElementById('chart-history'), {
+    type: 'bar',
+    data: {
+      labels: histLabels,
+      datasets: [{
+        label: '完成率 %',
+        data: histData,
+        backgroundColor: histData.map(v =>
+          v >= 80 ? 'rgba(52,199,89,0.7)' : v >= 50 ? 'rgba(255,107,53,0.7)' : 'rgba(255,59,48,0.5)'
+        ),
+        borderRadius: 4,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: '#2d3748' }, ticks: { color: '#8a9bb0', maxTicksLimit: 10 } },
+        y: { grid: { color: '#2d3748' }, ticks: { color: '#8a9bb0' }, min: 0, max: 100 },
+      },
+    },
+  });
+
+  // Radar chart
+  const cs = analytics.category_stats;
+  if (radarChart) radarChart.destroy();
+  radarChart = new Chart(document.getElementById('chart-radar'), {
+    type: 'radar',
+    data: {
+      labels: ['智慧', '体能', '专注', '意志'],
+      datasets: [{
+        label: '属性',
+        data: ['study','exercise','focus','reflection'].map(c => cs[c].score),
+        backgroundColor: 'rgba(255,107,53,0.15)',
+        borderColor: '#ff6b35',
+        pointBackgroundColor: '#ffd700',
+        pointBorderColor: '#ff6b35',
+        pointHoverBackgroundColor: '#fff',
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        r: {
+          min: 0, max: 100,
+          grid: { color: '#2d3748' },
+          ticks: { display: false },
+          pointLabels: { color: '#f0f2f5', font: { size: 12, weight: 'bold' } },
+          angleLines: { color: '#2d3748' },
+        },
+      },
+    },
+  });
+
+  // Category cards
+  const catGrid = document.getElementById('cat-grid');
+  catGrid.innerHTML = ['study','exercise','focus','reflection'].map(cat => {
+    const c = cs[cat];
+    return `
+      <div class="cat-item">
+        <div class="cat-header">
+          <span class="cat-icon">${c.icon}</span>
+          <span class="cat-name" style="color:${c.color}">${c.name}</span>
+        </div>
+        <div class="cat-score-row">
+          <div class="cat-bar-bg">
+            <div class="cat-bar-fill" style="width:${c.score}%;background:${c.color}"></div>
+          </div>
+          <span class="cat-pct" style="color:${c.color}">${c.score}%</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">30天完成 ${c.done} 次</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  ACHIEVEMENTS
+// ═══════════════════════════════════════════════
+async function loadAchievements() {
+  const achs = await API.get('/api/achievements');
+  const grid = document.getElementById('ach-grid');
+  grid.innerHTML = achs.map(a => `
+    <div class="ach-card ${a.is_unlocked ? 'unlocked' : 'locked'}">
+      <span class="ach-icon">${a.icon}</span>
+      <div class="ach-body">
+        <div class="ach-name">${a.name}</div>
+        <div class="ach-desc">${a.description}</div>
+        ${a.is_unlocked
+          ? `<div class="ach-date">✓ ${a.unlocked_at} 解锁</div>`
+          : `<div class="ach-locked-lbl">🔒 未解锁</div>`}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════
+async function loadSettings() {
+  const [user, habits] = await Promise.all([
+    API.get('/api/user'),
+    API.get('/api/habits'),
+  ]);
+
+  document.getElementById('set-name').value = user.name;
+
+  const catLabels = { study:'📚 学习', exercise:'🏃 运动', focus:'⚡ 专注', reflection:'✍️ 反思' };
+  document.getElementById('habit-mgmt-list').innerHTML = habits.map(h => `
+    <div class="habit-mgmt-row">
+      <span class="habit-mgmt-icon">${h.icon}</span>
+      <span class="habit-mgmt-name">${h.name}</span>
+      <span class="habit-mgmt-cat">${catLabels[h.category] || h.category}</span>
+      <button class="btn btn-danger" style="padding:4px 12px;font-size:11px" onclick="removeHabit(${h.id})">删除</button>
+    </div>
+  `).join('');
+}
+
+async function saveName() {
+  const name = document.getElementById('set-name').value.trim();
+  if (!name) return;
+  await API.put('/api/user', { name });
+  showToast('✅', '保存成功', '宿主名称已更新');
+  await loadDashboard();
+}
+
+async function addHabit() {
+  const name = document.getElementById('new-habit-name').value.trim();
+  const cat  = document.getElementById('new-habit-cat').value;
+  const icon = document.getElementById('new-habit-icon').value.trim() || '⚡';
+  if (!name) { showToast('⚠️', '请输入习惯名称', ''); return; }
+
+  await API.post('/api/habits', { name, category: cat, icon, base_exp: 100 });
+  document.getElementById('new-habit-name').value = '';
+  document.getElementById('new-habit-icon').value = '';
+  showToast('✅', '习惯已添加', name + ' 已加入任务系统');
+  await loadSettings();
+}
+
+async function removeHabit(id) {
+  await API.delete('/api/habits/' + id);
+  await loadSettings();
+}
+
+function showToast(icon, title, desc) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.style.borderColor = 'var(--border)';
+  toast.innerHTML = `
+    <span class="toast-icon">${icon}</span>
+    <div class="toast-body">
+      <div class="toast-title" style="color:var(--text)">${title}</div>
+      ${desc ? `<div class="toast-desc">${desc}</div>` : ''}
+    </div>
+  `;
+  container.appendChild(toast);
+  setTimeout(() => { toast.classList.add('fadeout'); setTimeout(() => toast.remove(), 400); }, 2500);
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+loadDashboard();
+</script>
+</body>
+</html>
