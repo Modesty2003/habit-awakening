@@ -620,180 +620,331 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
               <span class="avatar-card-id">ID #001</span>
             </div>
 
-            <!-- SVG Character — 5 parallax layers -->
+            <!-- SVG Character — 五条悟 inspired, 5 parallax layers -->
             <div class="char-svg-wrap" id="char-svg-wrap">
               <svg viewBox="0 0 280 400" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                  <filter id="f-glow-eyes" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="2.5" result="blur"/>
-                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  <!-- Six Eyes — triple-layer glow -->
+                  <filter id="f-six-eyes" x="-150%" y="-150%" width="400%" height="400%">
+                    <feGaussianBlur stdDeviation="7" result="bigBlur"/>
+                    <feGaussianBlur stdDeviation="2.5" in="SourceGraphic" result="smBlur"/>
+                    <feMerge><feMergeNode in="bigBlur"/><feMergeNode in="smBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
                   </filter>
-                  <filter id="f-aura" x="-40%" y="-40%" width="180%" height="180%">
-                    <feGaussianBlur stdDeviation="10"/>
+                  <filter id="f-glow-soft" x="-60%" y="-60%" width="220%" height="220%">
+                    <feGaussianBlur stdDeviation="5" result="b"/>
+                    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
                   </filter>
-                  <filter id="f-glow-sm" x="-30%" y="-30%" width="160%" height="160%">
-                    <feGaussianBlur stdDeviation="4" result="blur"/>
-                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  <filter id="f-aura-big" x="-80%" y="-80%" width="260%" height="260%">
+                    <feGaussianBlur stdDeviation="18"/>
                   </filter>
-                  <radialGradient id="aura-base" cx="50%" cy="90%" r="50%">
-                    <stop offset="0%" stop-color="var(--char-primary,#ff6b35)" stop-opacity="0.55"/>
-                    <stop offset="100%" stop-color="var(--char-primary,#ff6b35)" stop-opacity="0"/>
-                  </radialGradient>
-                  <linearGradient id="body-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#151e2e"/>
-                    <stop offset="100%" stop-color="#0d1219"/>
+                  <filter id="f-blur-md" x="-40%" y="-40%" width="180%" height="180%">
+                    <feGaussianBlur stdDeviation="9"/>
+                  </filter>
+                  <filter id="f-hair-glow" x="-15%" y="-15%" width="130%" height="130%">
+                    <feGaussianBlur stdDeviation="2" result="b"/>
+                    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                  <!-- Face warm left / cool shadow right -->
+                  <linearGradient id="gj-face" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%"   stop-color="#c08860"/>
+                    <stop offset="35%"  stop-color="#dca870"/>
+                    <stop offset="65%"  stop-color="#d4a06a"/>
+                    <stop offset="100%" stop-color="#b88050"/>
                   </linearGradient>
-                  <linearGradient id="jacket-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#1a2540"/>
-                    <stop offset="100%" stop-color="#111826"/>
+                  <!-- White hair — warm top, cold-blue base -->
+                  <linearGradient id="gj-hair-main" x1="15%" y1="0%" x2="85%" y2="100%">
+                    <stop offset="0%"   stop-color="#ffffff"/>
+                    <stop offset="55%"  stop-color="#e8eef6"/>
+                    <stop offset="100%" stop-color="#b8cce0"/>
+                  </linearGradient>
+                  <linearGradient id="gj-hair-hi" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%"   stop-color="#ffffff"/>
+                    <stop offset="100%" stop-color="#d8e6f4"/>
+                  </linearGradient>
+                  <linearGradient id="gj-hair-shadow" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%"   stop-color="#9ab0cc"/>
+                    <stop offset="100%" stop-color="#6a90b0"/>
+                  </linearGradient>
+                  <!-- Six Eyes iris: white-hot center → vivid cyan → deep blue -->
+                  <radialGradient id="gj-iris" cx="42%" cy="38%" r="58%">
+                    <stop offset="0%"   stop-color="#d8f8ff"/>
+                    <stop offset="20%"  stop-color="#60e0ff"/>
+                    <stop offset="55%"  stop-color="#00a8e0"/>
+                    <stop offset="100%" stop-color="#004888"/>
+                  </radialGradient>
+                  <!-- Background aura — respects theme via style attribute on elements -->
+                  <radialGradient id="gj-bg-aura" cx="50%" cy="42%" r="50%">
+                    <stop offset="0%"   stop-color="#003366" stop-opacity="0.7"/>
+                    <stop offset="55%"  stop-color="#001530" stop-opacity="0.35"/>
+                    <stop offset="100%" stop-color="#00050f" stop-opacity="0"/>
+                  </radialGradient>
+                  <!-- Outfit dark -->
+                  <linearGradient id="gj-outfit" x1="30%" y1="0%" x2="70%" y2="100%">
+                    <stop offset="0%"   stop-color="#18192e"/>
+                    <stop offset="100%" stop-color="#07070f"/>
                   </linearGradient>
                 </defs>
 
-                <!-- LAYER 1: Aura/ground glow (slowest) -->
+                <!-- ── LAYER 1: BACKGROUND (depth=3, slowest) ── -->
                 <g class="char-layer" data-depth="3">
-                  <ellipse cx="140" cy="370" rx="100" ry="22" fill="url(#aura-base)" filter="url(#f-aura)"/>
-                  <ellipse cx="140" cy="345" rx="90" ry="35" fill="url(#aura-base)" filter="url(#f-aura)" opacity="0.6"/>
-                  <circle cx="140" cy="310" r="100" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="0.6" opacity="0.2"/>
-                  <circle cx="140" cy="310" r="72" fill="none" stroke="var(--char-secondary,#ffd700)" stroke-width="0.6" opacity="0.25"/>
-                  <circle cx="140" cy="310" r="48" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="0.6" opacity="0.3"/>
+                  <rect x="0" y="0" width="280" height="400" fill="#040a14"/>
+                  <!-- Big aura from Six Eyes — theme-tinted -->
+                  <ellipse cx="140" cy="160" rx="135" ry="115" fill="url(#gj-bg-aura)" filter="url(#f-aura-big)"/>
+                  <!-- Per-eye glow spots (theme color) -->
+                  <ellipse cx="115" cy="165" rx="52" ry="46" style="fill:var(--char-primary,#0088cc)" opacity="0.18" filter="url(#f-blur-md)"/>
+                  <ellipse cx="165" cy="165" rx="52" ry="46" style="fill:var(--char-primary,#0088cc)" opacity="0.18" filter="url(#f-blur-md)"/>
+                  <!-- Radial field lines (Infinity / limitless feel) -->
+                  <g opacity="0.06" style="stroke:var(--char-primary,#00aaff)" stroke-width="1">
+                    <line x1="140" y1="165" x2="0"   y2="55"/>
+                    <line x1="140" y1="165" x2="0"   y2="165"/>
+                    <line x1="140" y1="165" x2="0"   y2="275"/>
+                    <line x1="140" y1="165" x2="280" y2="55"/>
+                    <line x1="140" y1="165" x2="280" y2="165"/>
+                    <line x1="140" y1="165" x2="280" y2="275"/>
+                    <line x1="140" y1="165" x2="80"  y2="0"/>
+                    <line x1="140" y1="165" x2="200" y2="0"/>
+                    <line x1="140" y1="165" x2="140" y2="0"/>
+                    <line x1="140" y1="165" x2="80"  y2="330"/>
+                    <line x1="140" y1="165" x2="200" y2="330"/>
+                    <line x1="140" y1="165" x2="140" y2="400"/>
+                  </g>
+                  <!-- Subtle ∞ glyph -->
+                  <text x="140" y="180" text-anchor="middle" font-size="160" fill="none"
+                        stroke="#0055aa" stroke-width="1.5" opacity="0.07"
+                        font-family="Georgia,serif" transform="rotate(-8 140 165)">∞</text>
                 </g>
 
-                <!-- LAYER 2: Body / outfit (medium-slow) -->
+                <!-- ── LAYER 2: OUTFIT + HAIR BACK MASS (depth=6) ── -->
                 <g class="char-layer" data-depth="6">
-                  <!-- Legs -->
-                  <rect x="107" y="285" width="26" height="80" rx="8" fill="#0e1520"/>
-                  <rect x="147" y="285" width="26" height="80" rx="8" fill="#0e1520"/>
-                  <!-- Boots -->
-                  <path d="M105,352 Q105,368 115,368 L136,368 Q140,368 140,365 L140,352 Z" fill="#080d14"/>
-                  <path d="M145,352 Q145,368 155,368 L176,368 Q180,368 180,365 L180,352 Z" fill="#080d14"/>
-                  <!-- Boot highlight -->
-                  <rect x="108" y="353" width="12" height="2" rx="1" fill="var(--char-primary,#ff6b35)" opacity="0.3"/>
-                  <rect x="148" y="353" width="12" height="2" rx="1" fill="var(--char-primary,#ff6b35)" opacity="0.3"/>
-                  <!-- Torso / jacket -->
-                  <path d="M88,185 C82,200 80,290 107,290 L173,290 C200,290 198,200 192,185 Z" fill="url(#jacket-grad)"/>
-                  <!-- Jacket inner glow center -->
-                  <ellipse cx="140" cy="240" rx="16" ry="20" fill="var(--char-primary,#ff6b35)" opacity="0.25" filter="url(#f-glow-sm)"/>
-                  <ellipse cx="140" cy="238" rx="6" ry="8" fill="var(--char-secondary,#ffd700)" opacity="0.6" filter="url(#f-glow-sm)"/>
-                  <!-- Jacket lapels -->
-                  <path d="M140,210 L115,185 L108,225 Z" fill="url(#jacket-grad)" stroke="rgba(255,107,53,0.15)" stroke-width="1"/>
-                  <path d="M140,210 L165,185 L172,225 Z" fill="url(#jacket-grad)" stroke="rgba(255,107,53,0.15)" stroke-width="1"/>
-                  <!-- Collar -->
-                  <path d="M125,185 L140,205 L155,185" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
-                  <!-- Jacket seam line -->
-                  <line x1="140" y1="210" x2="140" y2="290" stroke="rgba(255,107,53,0.1)" stroke-width="1.5"/>
-                  <!-- Energy lines on jacket -->
-                  <path d="M115,250 Q140,240 165,250" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="0.8" opacity="0.35"/>
-                  <path d="M118,262 Q140,254 162,262" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="0.5" opacity="0.2"/>
-                  <!-- Arms -->
-                  <path d="M88,185 C82,190 75,210 78,255 L94,255 C98,220 96,195 110,185 Z" fill="url(#jacket-grad)"/>
-                  <path d="M192,185 C198,190 205,210 202,255 L186,255 C182,220 184,195 170,185 Z" fill="url(#jacket-grad)"/>
-                  <!-- Gloves/hands -->
-                  <ellipse cx="84" cy="262" rx="10" ry="12" fill="#0d1520"/>
-                  <ellipse cx="196" cy="262" rx="10" ry="12" fill="#0d1520"/>
-                  <!-- Shoulder pads -->
-                  <ellipse cx="95" cy="188" rx="14" ry="9" fill="#1e2d45" transform="rotate(-10,95,188)"/>
-                  <ellipse cx="185" cy="188" rx="14" ry="9" fill="#1e2d45" transform="rotate(10,185,188)"/>
-                  <path d="M84,182 Q95,175 106,182" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="1" opacity="0.4"/>
-                  <path d="M174,182 Q185,175 196,182" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="1" opacity="0.4"/>
+                  <!-- Outfit body -->
+                  <path d="M45,400 Q50,275 90,242 Q114,228 140,225 Q166,228 190,242 Q230,275 235,400Z"
+                        fill="url(#gj-outfit)"/>
+                  <!-- Collar rise (hidden under hair) -->
+                  <path d="M90,242 Q114,230 140,227 Q166,230 190,242"
+                        fill="none" stroke="#222840" stroke-width="3"/>
+
+                  <!-- ── WHITE HAIR BACK MASS ── -->
+                  <!-- Big volume blob -->
+                  <path d="M70,160 Q58,122 62,90 Q66,58 82,44 Q104,26 140,22 Q176,26 198,44 Q214,58 218,90 Q222,122 210,160 Q196,118 184,106 Q168,88 152,82 Q146,79 140,77 Q134,79 128,82 Q112,88 96,106 Q84,118 70,160Z"
+                        fill="url(#gj-hair-main)"/>
+                  <!-- Left mass shadow -->
+                  <path d="M70,160 Q58,122 62,90 Q66,58 80,46 Q78,68 80,96 Q82,114 90,132Z"
+                        fill="url(#gj-hair-shadow)" opacity="0.55"/>
+                  <!-- Right mass shadow -->
+                  <path d="M210,160 Q222,122 218,90 Q214,58 200,46 Q202,68 200,96 Q198,114 190,132Z"
+                        fill="url(#gj-hair-shadow)" opacity="0.45"/>
+                  <!-- Top center shadow (parting depth) -->
+                  <ellipse cx="140" cy="36" rx="28" ry="12" fill="#90aec8" opacity="0.28"/>
                 </g>
 
-                <!-- LAYER 3: Head / skin (medium) -->
+                <!-- ── LAYER 3: FACE / NECK (depth=9) ── -->
                 <g class="char-layer" data-depth="9">
                   <!-- Neck -->
-                  <rect x="129" y="162" width="22" height="26" rx="6" fill="#c8915f"/>
-                  <!-- Head shape -->
-                  <path d="M98,115 Q96,72 140,68 Q184,72 182,115 L178,158 Q140,175 102,158 Z" fill="#c8915f"/>
-                  <!-- Jaw definition -->
-                  <path d="M102,150 Q140,168 178,150 L174,155 Q140,174 106,155 Z" fill="#b87d4a" opacity="0.5"/>
-                  <!-- Ears -->
-                  <ellipse cx="98" cy="118" rx="8" ry="11" fill="#c8915f"/>
-                  <ellipse cx="182" cy="118" rx="8" ry="11" fill="#c8915f"/>
-                  <ellipse cx="98" cy="118" rx="4" ry="7" fill="#b87a4a" opacity="0.5"/>
-                  <ellipse cx="182" cy="118" rx="4" ry="7" fill="#b87a4a" opacity="0.5"/>
+                  <rect x="125" y="220" width="30" height="26" rx="8" fill="#d09868"/>
+                  <rect x="125" y="220" width="10" height="26" rx="8" fill="#a87040" opacity="0.4"/>
+                  <!-- Face shape — angular Gojo jaw -->
+                  <path d="M104,110 Q90,124 88,152 Q86,180 98,205 Q113,226 140,230 Q167,226 182,205 Q194,180 192,152 Q190,124 176,110 Q162,90 140,86 Q118,90 104,110Z"
+                        fill="url(#gj-face)"/>
+                  <!-- Left face shadow (depth) -->
+                  <path d="M104,110 Q90,124 88,152 Q86,174 96,196 Q105,158 110,132Z"
+                        fill="#9a7045" opacity="0.32"/>
+                  <!-- Right highlight -->
+                  <path d="M176,110 Q190,124 192,152 Q194,168 186,185 Q180,158 172,132Z"
+                        fill="#f0c898" opacity="0.25"/>
+                  <!-- Ears (mostly hidden) -->
+                  <ellipse cx="89"  cy="158" rx="7" ry="10" fill="#cc9868"/>
+                  <ellipse cx="191" cy="158" rx="7" ry="10" fill="#cc9868"/>
+                  <ellipse cx="89"  cy="158" rx="3" ry="6"  fill="#a87040" opacity="0.5"/>
+                  <ellipse cx="191" cy="158" rx="3" ry="6"  fill="#a87040" opacity="0.5"/>
+                  <!-- Under-eye subtle area -->
+                  <ellipse cx="115" cy="180" rx="16" ry="5" fill="#b88858" opacity="0.22"/>
+                  <ellipse cx="165" cy="180" rx="16" ry="5" fill="#b88858" opacity="0.22"/>
                 </g>
 
-                <!-- LAYER 4: Face features + hair (faster) -->
+                <!-- ── LAYER 4: HAIR FRONT + EYEBROWS + EYES + MOUTH (depth=13) ── -->
                 <g class="char-layer" data-depth="13">
-                  <!-- Hair back layers -->
-                  <path d="M98,115 Q93,75 108,60 Q105,88 118,98 Z" fill="#18182e"/>
-                  <path d="M182,115 Q187,75 172,60 Q175,88 162,98 Z" fill="#18182e"/>
-                  <!-- Main hair mass -->
-                  <path d="M116,95 Q120,45 140,38 Q160,45 164,95 L155,108 L125,108 Z" fill="#1e1e38"/>
-                  <!-- Hair spikes / dynamic flow -->
-                  <path d="M116,95 Q108,52 116,42 Q118,68 125,88 Z" fill="#22223a"/>
-                  <path d="M164,95 Q172,52 164,42 Q162,68 155,88 Z" fill="#22223a"/>
-                  <!-- Spike top-left -->
-                  <path d="M124,72 Q118,38 128,28 Q130,50 136,68 Z" fill="#1e1e38"/>
-                  <!-- Spike top-center -->
-                  <path d="M133,60 Q138,22 140,18 Q142,22 147,60 L143,72 L137,72 Z" fill="#22223a"/>
-                  <!-- Spike top-right -->
-                  <path d="M156,72 Q162,38 152,28 Q150,50 144,68 Z" fill="#1e1e38"/>
-                  <!-- Hair highlight streak (matches theme) -->
-                  <path d="M136,38 Q139,28 140,24 Q141,28 142,40" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
-                  <path d="M124,58 Q121,46 122,40" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="1.5" stroke-linecap="round" opacity="0.35"/>
-                  <!-- Side hair strands over forehead -->
-                  <path d="M112,108 Q106,95 110,80 Q116,94 118,106" fill="#1e1e38"/>
-                  <path d="M168,108 Q174,95 170,80 Q164,94 162,106" fill="#1e1e38"/>
 
-                  <!-- Eyebrows -->
-                  <path d="M112,108 Q120,103 130,106" fill="none" stroke="#0e0e22" stroke-width="2.5" stroke-linecap="round"/>
-                  <path d="M150,106 Q160,103 168,108" fill="none" stroke="#0e0e22" stroke-width="2.5" stroke-linecap="round"/>
+                  <!-- ── HAIR FRONT FRAME ── -->
+                  <!-- Left framing strand (thick) -->
+                  <path d="M90,134 Q76,112 78,88 Q80,66 90,52 Q83,70 84,96 Q85,115 92,134Z"
+                        fill="url(#gj-hair-hi)" opacity="0.92"/>
+                  <path d="M78,148 Q64,120 66,92 Q68,68 78,52 Q71,72 72,98 Q73,116 80,138Z"
+                        fill="url(#gj-hair-main)" opacity="0.82"/>
+                  <!-- Right framing strand -->
+                  <path d="M190,134 Q204,112 202,88 Q200,66 190,52 Q197,70 196,96 Q195,115 188,134Z"
+                        fill="url(#gj-hair-hi)" opacity="0.92"/>
+                  <path d="M202,148 Q216,120 214,92 Q212,68 202,52 Q209,72 208,98 Q207,116 200,138Z"
+                        fill="url(#gj-hair-main)" opacity="0.82"/>
 
-                  <!-- Eyes — the focal point -->
-                  <!-- Left eye socket -->
-                  <path d="M110,118 Q121,112 132,118 Q121,128 110,118 Z" fill="var(--char-primary,#ff6b35)" filter="url(#f-glow-eyes)"/>
-                  <ellipse cx="121" cy="118" rx="6" ry="5.5" fill="var(--char-eye,#ff8c50)"/>
-                  <ellipse cx="121" cy="117" rx="2.8" ry="2.8" fill="#050a12"/>
-                  <ellipse cx="122.5" cy="115.5" rx="1.2" ry="1.2" fill="rgba(255,255,255,0.85)"/>
-                  <!-- Right eye socket -->
-                  <path d="M148,118 Q159,112 170,118 Q159,128 148,118 Z" fill="var(--char-primary,#ff6b35)" filter="url(#f-glow-eyes)"/>
-                  <ellipse cx="159" cy="118" rx="6" ry="5.5" fill="var(--char-eye,#ff8c50)"/>
-                  <ellipse cx="159" cy="117" rx="2.8" ry="2.8" fill="#050a12"/>
-                  <ellipse cx="160.5" cy="115.5" rx="1.2" ry="1.2" fill="rgba(255,255,255,0.85)"/>
+                  <!-- Top hair — overlapping spike layers -->
+                  <!-- Left spike group -->
+                  <path d="M116,82 Q108,52 116,38 Q126,26 136,28 Q120,40 116,82Z"
+                        fill="url(#gj-hair-hi)"/>
+                  <path d="M108,76 Q98,48 108,34 Q118,22 130,24 Q112,36 110,76Z"
+                        fill="url(#gj-hair-main)" opacity="0.85"/>
+                  <!-- Center peak -->
+                  <path d="M132,70 Q135,40 140,26 Q145,40 148,70 Q143,60 140,58 Q137,60 132,70Z"
+                        fill="#ffffff" opacity="0.95"/>
+                  <!-- Right spike group -->
+                  <path d="M164,82 Q172,52 164,38 Q154,26 144,28 Q160,40 164,82Z"
+                        fill="url(#gj-hair-hi)"/>
+                  <path d="M172,76 Q182,48 172,34 Q162,22 150,24 Q168,36 170,76Z"
+                        fill="url(#gj-hair-main)" opacity="0.85"/>
 
-                  <!-- Nose (subtle) -->
-                  <path d="M136,132 Q140,137 144,132" fill="none" stroke="#9a6035" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
-                  <!-- Mouth — confident slight smirk -->
-                  <path d="M126,148 Q134,153 140,151 Q146,153 154,148" fill="none" stroke="#8a5530" stroke-width="1.5" stroke-linecap="round"/>
-                  <!-- Scar/mark (optional character detail) -->
-                  <path d="M165,110 L168,118" stroke="var(--char-primary,#ff6b35)" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+                  <!-- Loose strands falling over forehead — Gojo's casual hair -->
+                  <path d="M110,94 Q103,112 104,130 Q107,148 108,158"
+                        fill="none" stroke="#ccdae8" stroke-width="5" stroke-linecap="round"/>
+                  <path d="M110,94 Q103,112 104,130 Q107,148 108,158"
+                        fill="none" stroke="#f2f6fa" stroke-width="2.5" stroke-linecap="round"/>
+                  <path d="M118,86 Q113,106 116,128 Q118,142 117,152"
+                        fill="none" stroke="#dde8f2" stroke-width="3.5" stroke-linecap="round"/>
+
+                  <path d="M170,94 Q177,112 176,130 Q173,148 172,158"
+                        fill="none" stroke="#ccdae8" stroke-width="5" stroke-linecap="round"/>
+                  <path d="M170,94 Q177,112 176,130 Q173,148 172,158"
+                        fill="none" stroke="#f2f6fa" stroke-width="2.5" stroke-linecap="round"/>
+                  <path d="M162,86 Q167,106 164,128 Q162,142 163,152"
+                        fill="none" stroke="#dde8f2" stroke-width="3.5" stroke-linecap="round"/>
+
+                  <!-- Center casual strands -->
+                  <path d="M137,72 Q132,90 134,112 Q136,128 134,140"
+                        fill="none" stroke="#d8e6f4" stroke-width="3.5" stroke-linecap="round"/>
+                  <path d="M143,72 Q148,88 146,108 Q144,122 146,136"
+                        fill="none" stroke="#e8f0f8" stroke-width="2.5" stroke-linecap="round"/>
+
+                  <!-- ── EYEBROWS — white, slightly arched ── -->
+                  <path d="M94,144 Q107,136 132,139"  fill="none" stroke="#dce8f4" stroke-width="3.2" stroke-linecap="round"/>
+                  <path d="M148,139 Q173,136 186,144" fill="none" stroke="#dce8f4" stroke-width="3.2" stroke-linecap="round"/>
+                  <!-- Eyebrow depth shadow -->
+                  <path d="M95,146 Q108,138 132,141"  fill="none" stroke="#806040" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+                  <path d="M148,141 Q172,138 185,146" fill="none" stroke="#806040" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+
+                  <!-- ── EYES — SIX EYES ── -->
+                  <g filter="url(#f-six-eyes)">
+                    <!-- Left eye -->
+                    <!-- Almond socket (Gojo's relaxed-droopy outer corner) -->
+                    <path d="M94,163 Q107,151 133,156 Q139,159 132,171 Q114,180 94,163Z"
+                          fill="#04101e"/>
+                    <!-- Iris -->
+                    <ellipse cx="114" cy="163" rx="11.5" ry="10.5" fill="url(#gj-iris)"/>
+                    <!-- Six Eyes concentric rings -->
+                    <circle cx="114" cy="163" r="10"  fill="none" stroke="#70e0ff" stroke-width="0.7" opacity="0.55"/>
+                    <circle cx="114" cy="163" r="7.5" fill="none" stroke="#90e8ff" stroke-width="0.55" opacity="0.45"/>
+                    <circle cx="114" cy="163" r="5"   fill="none" stroke="#b0f0ff" stroke-width="0.45" opacity="0.38"/>
+                    <!-- Pupil -->
+                    <ellipse cx="114" cy="163" rx="4" ry="4" fill="#000d1a"/>
+                    <!-- Main highlight (top-right, bright) -->
+                    <ellipse cx="117" cy="160" rx="2.5" ry="1.8" fill="white" opacity="0.95"/>
+                    <!-- Secondary highlight (bottom-left, small) -->
+                    <ellipse cx="110" cy="167" rx="1.1" ry="0.9" fill="white" opacity="0.45"/>
+                    <!-- Upper eyelid line -->
+                    <path d="M94,163 Q107,151 133,156" fill="none" stroke="#071828" stroke-width="2"/>
+                    <!-- Lower eyelid line -->
+                    <path d="M94,163 Q114,175 132,171" fill="none" stroke="#102030" stroke-width="1.2"/>
+
+                    <!-- Right eye -->
+                    <path d="M147,156 Q173,151 186,163 Q169,180 147,171 Q141,165 147,156Z"
+                          fill="#04101e"/>
+                    <ellipse cx="166" cy="163" rx="11.5" ry="10.5" fill="url(#gj-iris)"/>
+                    <circle cx="166" cy="163" r="10"  fill="none" stroke="#70e0ff" stroke-width="0.7" opacity="0.55"/>
+                    <circle cx="166" cy="163" r="7.5" fill="none" stroke="#90e8ff" stroke-width="0.55" opacity="0.45"/>
+                    <circle cx="166" cy="163" r="5"   fill="none" stroke="#b0f0ff" stroke-width="0.45" opacity="0.38"/>
+                    <ellipse cx="166" cy="163" rx="4" ry="4" fill="#000d1a"/>
+                    <ellipse cx="169" cy="160" rx="2.5" ry="1.8" fill="white" opacity="0.95"/>
+                    <ellipse cx="162" cy="167" rx="1.1" ry="0.9" fill="white" opacity="0.45"/>
+                    <path d="M147,156 Q173,151 186,163" fill="none" stroke="#071828" stroke-width="2"/>
+                    <path d="M147,171 Q166,175 186,163" fill="none" stroke="#102030" stroke-width="1.2"/>
+                  </g>
+
+                  <!-- ── NOSE BRIDGE + TIP ── -->
+                  <line x1="140" y1="148" x2="140" y2="182" stroke="#e8b888" stroke-width="1.2" stroke-linecap="round" opacity="0.3"/>
+                  <path d="M132,188 Q140,193 148,188" fill="none" stroke="#9a7040" stroke-width="1.4" stroke-linecap="round" opacity="0.55"/>
+                  <path d="M133,187 Q131,191 135,191" fill="none" stroke="#886030" stroke-width="1" stroke-linecap="round" opacity="0.3"/>
+                  <path d="M147,187 Q149,191 145,191" fill="none" stroke="#886030" stroke-width="1" stroke-linecap="round" opacity="0.3"/>
+
+                  <!-- ── MOUTH — Gojo's signature smirk ── -->
+                  <!-- Upper lip hint -->
+                  <path d="M122,208 Q132,203 140,205 Q148,203 158,208" fill="#9a6838" opacity="0.55"/>
+                  <!-- Main smile curve -->
+                  <path d="M122,208 Q133,216 140,214 Q147,216 155,209"
+                        fill="none" stroke="#804820" stroke-width="2" stroke-linecap="round"/>
+                  <!-- The smirk — right side upward curl -->
+                  <path d="M153,210 Q160,204 164,200"
+                        fill="none" stroke="#804820" stroke-width="1.8" stroke-linecap="round" opacity="0.75"/>
+                  <!-- Philtrum -->
+                  <path d="M136,200 Q140,205 144,200" fill="none" stroke="#a87848" stroke-width="1.1" stroke-linecap="round" opacity="0.35"/>
+
+                  <!-- ── HIGH COLLAR ── -->
+                  <path d="M90,244 Q96,222 108,218 Q122,212 140,210 Q158,212 172,218 Q184,222 190,244 L190,264 Q166,250 140,248 Q114,250 90,264Z"
+                        fill="url(#gj-outfit)"/>
+                  <!-- Collar top fold line -->
+                  <path d="M108,218 Q122,210 140,208 Q158,210 172,218"
+                        fill="none" stroke="#28304a" stroke-width="2.5"/>
+                  <!-- Collar texture crease -->
+                  <path d="M116,232 Q140,224 164,232" fill="none" stroke="#181e2e" stroke-width="1.2" opacity="0.6"/>
+                  <!-- Collar edge glow (theme accent) -->
+                  <path d="M90,244 Q96,224 108,218" fill="none" style="stroke:var(--char-primary,#0055aa)" stroke-width="1" opacity="0.35"/>
+                  <path d="M190,244 Q184,224 172,218" fill="none" style="stroke:var(--char-primary,#0055aa)" stroke-width="1" opacity="0.35"/>
                 </g>
 
-                <!-- LAYER 5: FX / particles (fastest) -->
+                <!-- ── LAYER 5: EYE GLOW BLOOM + PARTICLES (depth=18, fastest) ── -->
                 <g class="char-layer" data-depth="18">
-                  <!-- Floating energy orbs -->
-                  <circle cx="58" cy="195" r="3" fill="var(--char-primary,#ff6b35)" opacity="0.7">
-                    <animate attributeName="cy" values="195;175;195" dur="3.2s" repeatCount="indefinite"/>
-                    <animate attributeName="opacity" values="0.7;0.2;0.7" dur="3.2s" repeatCount="indefinite"/>
+                  <!-- Six Eyes bloom — always cyan (hardcoded, it's the Six Eyes) -->
+                  <ellipse cx="114" cy="163" rx="24" ry="22" fill="#0070bb" opacity="0.32" filter="url(#f-blur-md)"/>
+                  <ellipse cx="114" cy="163" rx="13" ry="12" fill="#00c8ff" opacity="0.28" filter="url(#f-glow-soft)"/>
+                  <ellipse cx="166" cy="163" rx="24" ry="22" fill="#0070bb" opacity="0.32" filter="url(#f-blur-md)"/>
+                  <ellipse cx="166" cy="163" rx="13" ry="12" fill="#00c8ff" opacity="0.28" filter="url(#f-glow-soft)"/>
+
+                  <!-- Limitless expansion rings -->
+                  <circle cx="140" cy="163" r="20" fill="none" stroke="#0088cc" stroke-width="0.6" opacity="0">
+                    <animate attributeName="r"       values="20;75;20"    dur="5.5s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity"  values="0.3;0;0.3"  dur="5.5s" repeatCount="indefinite"/>
                   </circle>
-                  <circle cx="220" cy="210" r="2.5" fill="var(--char-secondary,#ffd700)" opacity="0.6">
-                    <animate attributeName="cy" values="210;185;210" dur="4.1s" repeatCount="indefinite"/>
-                    <animate attributeName="opacity" values="0.6;0.15;0.6" dur="4.1s" repeatCount="indefinite"/>
+                  <circle cx="140" cy="163" r="20" fill="none" stroke="#00aaee" stroke-width="0.5" opacity="0">
+                    <animate attributeName="r"       values="20;55;20"    dur="5.5s" begin="2.75s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity"  values="0.25;0;0.25" dur="5.5s" begin="2.75s" repeatCount="indefinite"/>
                   </circle>
-                  <circle cx="65" cy="260" r="2" fill="var(--char-secondary,#ffd700)" opacity="0.5">
-                    <animate attributeName="cy" values="260;238;260" dur="3.8s" repeatCount="indefinite"/>
+
+                  <!-- Cursed energy particles (theme color) -->
+                  <circle cx="55"  cy="138" r="2.5" style="fill:var(--char-primary,#00aaff)" opacity="0.7">
+                    <animate attributeName="cy" values="138;116;138" dur="3.5s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.7;0.12;0.7" dur="3.5s" repeatCount="indefinite"/>
                   </circle>
-                  <circle cx="215" cy="155" r="2" fill="var(--char-primary,#ff6b35)" opacity="0.45">
-                    <animate attributeName="cy" values="155;130;155" dur="2.9s" repeatCount="indefinite"/>
-                    <animate attributeName="opacity" values="0.45;0.1;0.45" dur="2.9s" repeatCount="indefinite"/>
+                  <circle cx="225" cy="148" r="2" style="fill:var(--char-primary,#00aaff)" opacity="0.6">
+                    <animate attributeName="cy" values="148;122;148" dur="4.2s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.6;0.1;0.6" dur="4.2s" repeatCount="indefinite"/>
                   </circle>
-                  <circle cx="78" cy="145" r="1.5" fill="var(--char-primary,#ff6b35)" opacity="0.4">
-                    <animate attributeName="cy" values="145;125;145" dur="3.5s" repeatCount="indefinite"/>
+                  <circle cx="48"  cy="195" r="1.8" style="fill:var(--char-secondary,#40d8ff)" opacity="0.5">
+                    <animate attributeName="cy" values="195;172;195" dur="3.1s" repeatCount="indefinite"/>
                   </circle>
-                  <circle cx="202" cy="290" r="1.5" fill="var(--char-secondary,#ffd700)" opacity="0.35">
-                    <animate attributeName="cy" values="290;268;290" dur="4.5s" repeatCount="indefinite"/>
+                  <circle cx="232" cy="188" r="2" style="fill:var(--char-secondary,#40d8ff)" opacity="0.5">
+                    <animate attributeName="cy" values="188;162;188" dur="3.9s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.5;0.08;0.5" dur="3.9s" repeatCount="indefinite"/>
                   </circle>
-                  <!-- Energy arc from hand -->
-                  <path d="M82,258 Q72,245 68,230" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="1.5" stroke-linecap="round" opacity="0.4">
-                    <animate attributeName="opacity" values="0.4;0.1;0.4" dur="2s" repeatCount="indefinite"/>
-                  </path>
-                  <path d="M198,258 Q208,245 212,230" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="1.5" stroke-linecap="round" opacity="0.4">
-                    <animate attributeName="opacity" values="0.1;0.4;0.1" dur="2s" repeatCount="indefinite"/>
-                  </path>
-                  <!-- Chest pulse ring -->
-                  <circle cx="140" cy="238" r="12" fill="none" stroke="var(--char-secondary,#ffd700)" stroke-width="1" opacity="0">
-                    <animate attributeName="r" values="12;28;12" dur="2.5s" repeatCount="indefinite"/>
-                    <animate attributeName="opacity" values="0.5;0;0.5" dur="2.5s" repeatCount="indefinite"/>
+                  <circle cx="140" cy="55"  r="2.2" style="fill:var(--char-primary,#00aaff)" opacity="0.42">
+                    <animate attributeName="cy" values="55;32;55" dur="4.6s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.42;0.05;0.42" dur="4.6s" repeatCount="indefinite"/>
+                  </circle>
+                  <circle cx="82"  cy="258" r="1.5" style="fill:var(--char-primary,#00aaff)" opacity="0.35">
+                    <animate attributeName="cy" values="258;234;258" dur="3.3s" repeatCount="indefinite"/>
+                  </circle>
+
+                  <!-- Hair shimmer sparkles -->
+                  <circle cx="140" cy="30" r="3" fill="white" opacity="0">
+                    <animate attributeName="opacity" values="0;0.85;0" dur="3.2s" repeatCount="indefinite"/>
+                    <animate attributeName="r"       values="1;3;1"    dur="3.2s" repeatCount="indefinite"/>
+                  </circle>
+                  <circle cx="106" cy="50" r="2" fill="white" opacity="0">
+                    <animate attributeName="opacity" values="0;0.65;0" dur="4.1s" begin="1.6s" repeatCount="indefinite"/>
+                  </circle>
+                  <circle cx="174" cy="46" r="2" fill="white" opacity="0">
+                    <animate attributeName="opacity" values="0;0.65;0" dur="3.6s" begin="0.9s" repeatCount="indefinite"/>
+                  </circle>
+                  <circle cx="80"  cy="88" r="1.5" fill="white" opacity="0">
+                    <animate attributeName="opacity" values="0;0.45;0" dur="5s"   begin="2.4s" repeatCount="indefinite"/>
+                  </circle>
+                  <circle cx="200" cy="82" r="1.5" fill="white" opacity="0">
+                    <animate attributeName="opacity" values="0;0.45;0" dur="4.4s" begin="3.1s" repeatCount="indefinite"/>
                   </circle>
                 </g>
               </svg>
@@ -814,27 +965,32 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
         <div class="card">
           <div class="card-title">外观定制</div>
           <div class="custom-section">
-            <div class="custom-label">形象主题</div>
+            <div class="custom-label">能量配色</div>
             <div class="theme-options">
-              <div class="theme-dot active" data-theme="awakening"
+              <div class="theme-dot active" data-theme="sixeyes"
+                style="background:linear-gradient(135deg,#00aaff,#00eeff)"
+                onclick="setCharTheme('sixeyes',this)">
+                <span class="theme-name">六眼·无下限</span>
+              </div>
+              <div class="theme-dot" data-theme="awakening"
                 style="background:linear-gradient(135deg,#ff6b35,#ffd700)"
                 onclick="setCharTheme('awakening',this)">
-                <span class="theme-name">暗夜觉醒</span>
+                <span class="theme-name">橙炎·觉醒</span>
               </div>
               <div class="theme-dot" data-theme="flame"
                 style="background:linear-gradient(135deg,#ff3b30,#ff9500)"
                 onclick="setCharTheme('flame',this)">
-                <span class="theme-name">烈焰斗士</span>
+                <span class="theme-name">赤炎·领域</span>
               </div>
               <div class="theme-dot" data-theme="abyss"
                 style="background:linear-gradient(135deg,#af52de,#4a9eff)"
                 onclick="setCharTheme('abyss',this)">
-                <span class="theme-name">深渊领主</span>
+                <span class="theme-name">虚式·紫</span>
               </div>
               <div class="theme-dot" data-theme="glory"
-                style="background:linear-gradient(135deg,#4a9eff,#34c759)"
+                style="background:linear-gradient(135deg,#34c759,#00aaff)"
                 onclick="setCharTheme('glory',this)">
-                <span class="theme-name">荣光守护</span>
+                <span class="theme-name">反转·术式</span>
               </div>
             </div>
           </div>
@@ -1735,24 +1891,24 @@ function showToast(icon, title, desc, borderColor) {
 // ═══════════════════════════════════════════════
 
 const CHAR_THEMES = {
-  awakening: { primary: '#ff6b35', secondary: '#ffd700', eye: '#ff8c50' },
-  flame:     { primary: '#ff3b30', secondary: '#ff9500', eye: '#ff6040' },
-  abyss:     { primary: '#af52de', secondary: '#4a9eff', eye: '#c570f0' },
-  glory:     { primary: '#4a9eff', secondary: '#34c759', eye: '#70c0ff' },
+  sixeyes:   { primary: '#00aaff', secondary: '#40e0ff' },   // canonical Gojo
+  awakening: { primary: '#ff6b35', secondary: '#ffd700' },
+  flame:     { primary: '#ff3b30', secondary: '#ff9500' },
+  abyss:     { primary: '#af52de', secondary: '#4a9eff' },
+  glory:     { primary: '#34c759', secondary: '#00aaff' },
 };
 
-let _charTheme = localStorage.getItem('charTheme') || 'awakening';
+let _charTheme = localStorage.getItem('charTheme') || 'sixeyes';
 
 function applyCharTheme(name) {
-  const t = CHAR_THEMES[name] || CHAR_THEMES.awakening;
+  const t = CHAR_THEMES[name] || CHAR_THEMES.sixeyes;
   const card = document.getElementById('avatar-card');
   if (!card) return;
   card.style.setProperty('--char-primary', t.primary);
   card.style.setProperty('--char-secondary', t.secondary);
-  card.style.setProperty('--char-eye', t.eye);
-  // Update card border glow
-  card.style.boxShadow = `0 20px 60px rgba(0,0,0,0.6), 0 0 30px ${t.primary}33`;
-  card.style.borderColor = `${t.primary}40`;
+  // Update card border glow to theme color
+  card.style.boxShadow = `0 20px 60px rgba(0,0,0,0.6), 0 0 30px ${t.primary}40`;
+  card.style.borderColor = `${t.primary}45`;
 }
 
 function setCharTheme(name, dotEl) {
