@@ -539,6 +539,14 @@ def delete_challenge(challenge_id: int):
         conn.close()
 
 
+@app.get("/assets/{filename}", include_in_schema=False)
+def serve_asset(filename: str):
+    path = os.path.join(FRONTEND_DIR, "assets", filename)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="Not found")
+    return FileResponse(path)
+
+
 # ── 静态文件 & SPA 兜底 ───────────────────────────────────────────────────────
 
 @app.get("/", include_in_schema=False)
