@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+dist/
+build/
+*.egg-info/
+
+# Database — 用户数据不上传
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# macOS
+.DS_Store
+
+# PyInstaller
+*.spec
+
+# IDE
+.idea/
+.vscode/
