@@ -71,15 +71,32 @@ html, body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  flex-shrink: 0;
 }
 
 #topbar .tagline {
   font-size: 11px;
   color: var(--muted);
   letter-spacing: 1px;
+  flex-shrink: 0;
 }
 
-#topbar .spacer { flex: 1; }
+/* 名言跑马灯 */
+#quote-ticker {
+  flex: 1;
+  overflow: hidden;
+  text-align: center;
+  padding: 0 16px;
+}
+#quote-text {
+  font-size: 12px;
+  color: var(--yellow);
+  font-style: italic;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  letter-spacing: 0.3px;
+}
+#quote-text.visible { opacity: 1; }
 
 #topbar .date-chip {
   font-size: 12px;
@@ -88,6 +105,7 @@ html, body {
   padding: 4px 12px;
   border-radius: 20px;
   border: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 /* ── SIDEBAR ────────────────────────────────── */
@@ -166,11 +184,7 @@ html, body {
 }
 
 /* ── CHARACTER PANEL ───────────────────────── */
-.char-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+.char-panel { display: flex; flex-direction: column; gap: 14px; }
 
 .char-avatar-wrap {
   text-align: center;
@@ -206,20 +220,8 @@ html, body {
   100% { transform: scale(1.25); opacity: 0; }
 }
 
-.char-name {
-  font-size: 16px;
-  font-weight: 900;
-  text-align: center;
-  letter-spacing: 1px;
-}
-
-.char-title {
-  font-size: 11px;
-  color: var(--yellow);
-  text-align: center;
-  letter-spacing: 2px;
-  font-weight: 700;
-}
+.char-name { font-size: 16px; font-weight: 900; text-align: center; letter-spacing: 1px; }
+.char-title { font-size: 11px; color: var(--yellow); text-align: center; letter-spacing: 2px; font-weight: 700; }
 
 .level-row {
   display: flex;
@@ -259,7 +261,6 @@ html, body {
 .exp-text { font-size: 11px; color: var(--muted); text-align: right; }
 
 /* 属性栏 */
-.stats-section {}
 .stat-row {
   display: flex;
   align-items: center;
@@ -280,17 +281,8 @@ html, body {
   height: 5px;
   overflow: hidden;
 }
-.stat-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.8s ease;
-}
-.stat-score {
-  font-size: 11px;
-  color: var(--muted);
-  width: 28px;
-  text-align: right;
-}
+.stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+.stat-score { font-size: 11px; color: var(--muted); width: 28px; text-align: right; }
 
 /* 连击 */
 .streak-display {
@@ -301,17 +293,10 @@ html, body {
   border: 1px solid var(--border);
 }
 .streak-fire { font-size: 28px; }
-.streak-count {
-  font-size: 28px;
-  font-weight: 900;
-  color: var(--orange);
-  line-height: 1;
-}
+.streak-count { font-size: 28px; font-weight: 900; color: var(--orange); line-height: 1; }
 .streak-label { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 1px; }
 
 /* ── MISSION BOARD ─────────────────────────── */
-.mission-board {}
-
 .system-msg {
   background: linear-gradient(135deg, rgba(0,255,127,0.06), rgba(0,200,255,0.04));
   border: 1px solid rgba(0,255,127,0.2);
@@ -385,12 +370,14 @@ html, body {
 
 .habit-icon { font-size: 22px; width: 30px; text-align: center; }
 
-.habit-info { flex: 1; }
+.habit-info { flex: 1; min-width: 0; }
 .habit-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
 .habit-meta { font-size: 11px; color: var(--muted); }
 .habit-streak { color: var(--orange); font-weight: 700; }
 
-.habit-right { display: flex; align-items: center; gap: 10px; }
+.habit-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+.exp-badge-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 
 .exp-badge {
   font-size: 12px;
@@ -402,6 +389,17 @@ html, body {
   border: 1px solid rgba(255,215,0,0.2);
   white-space: nowrap;
 }
+
+/* 动态 EXP 调整标签 */
+.dyn-exp-tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.dyn-exp-tag.up   { color: #34c759; background: rgba(52,199,89,0.12); }
+.dyn-exp-tag.down { color: #ff9500; background: rgba(255,149,0,0.12); }
 
 .check-btn {
   width: 30px;
@@ -462,12 +460,7 @@ html, body {
   align-items: center;
   justify-content: center;
 }
-.gauge-val {
-  font-size: 24px;
-  font-weight: 900;
-  color: var(--orange);
-  line-height: 1;
-}
+.gauge-val { font-size: 24px; font-weight: 900; color: var(--orange); line-height: 1; }
 .gauge-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
 
 /* BOSS 战 */
@@ -483,11 +476,7 @@ html, body {
   overflow: hidden;
   margin-bottom: 6px;
 }
-.boss-progress-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 1s ease;
-}
+.boss-progress-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
 .boss-rate { font-size: 11px; color: var(--muted); text-align: right; }
 .boss-win { color: var(--green); font-weight: 700; }
 .boss-fail { color: var(--red); }
@@ -518,11 +507,7 @@ html, body {
   text-align: center;
   border: 1px solid var(--border);
 }
-.stat-card .val {
-  font-size: 22px;
-  font-weight: 900;
-  margin-bottom: 4px;
-}
+.stat-card .val { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
 .stat-card .lbl { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
 
 /* 分类属性卡 */
@@ -544,6 +529,35 @@ html, body {
 /* ═══════════════════════════════════════════════
    ACHIEVEMENTS PAGE
 ═══════════════════════════════════════════════ */
+/* 分类 Tab */
+.ach-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.ach-tab {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: var(--bg3);
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+.ach-tab:hover { color: var(--text); border-color: var(--orange); }
+.ach-tab.active { background: var(--orange); color: white; border-color: var(--orange); }
+
+.ach-summary {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.ach-summary span { color: var(--yellow); font-weight: 700; }
+
 #page-achievements .ach-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -568,17 +582,54 @@ html, body {
 
 .ach-card.locked { opacity: 0.4; filter: grayscale(0.8); }
 
-.ach-icon {
-  font-size: 32px;
-  line-height: 1;
-  flex-shrink: 0;
-}
+.ach-icon { font-size: 32px; line-height: 1; flex-shrink: 0; }
 
-.ach-body {}
 .ach-name { font-size: 13px; font-weight: 900; margin-bottom: 4px; }
 .ach-desc { font-size: 11px; color: var(--muted); line-height: 1.5; margin-bottom: 6px; }
 .ach-date { font-size: 10px; color: var(--yellow); font-weight: 700; }
 .ach-locked-lbl { font-size: 10px; color: var(--muted); }
+
+/* ═══════════════════════════════════════════════
+   HISTORY PAGE
+═══════════════════════════════════════════════ */
+.history-day {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.history-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+}
+.history-day-date { font-size: 13px; font-weight: 700; color: var(--orange); }
+.history-day-count { font-size: 11px; color: var(--muted); }
+
+.history-log-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.history-log-row:last-child { border-bottom: none; }
+.history-log-icon { font-size: 18px; width: 24px; text-align: center; }
+.history-log-name { flex: 1; font-size: 13px; }
+.history-log-name .deleted-tag {
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--bg3);
+  padding: 1px 6px;
+  border-radius: 6px;
+  margin-left: 6px;
+  border: 1px solid var(--border);
+}
+.history-log-exp { font-size: 12px; font-weight: 700; color: var(--yellow); }
+.history-log-streak { font-size: 11px; color: var(--muted); }
 
 /* ═══════════════════════════════════════════════
    SETTINGS PAGE
@@ -629,10 +680,7 @@ html, body {
   letter-spacing: 0.5px;
 }
 
-.btn-primary {
-  background: var(--orange);
-  color: white;
-}
+.btn-primary { background: var(--orange); color: white; }
 .btn-primary:hover { background: var(--orange-d); transform: translateY(-1px); }
 
 .btn-ghost {
@@ -665,6 +713,51 @@ html, body {
   padding: 2px 8px;
   border-radius: 10px;
 }
+
+/* Emoji picker */
+.emoji-btn {
+  width: 44px;
+  height: 42px;
+  font-size: 20px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s;
+  flex-shrink: 0;
+}
+.emoji-btn:hover { border-color: var(--orange); }
+
+.emoji-picker-popup {
+  position: absolute;
+  z-index: 200;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(7, 36px);
+  gap: 4px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.emoji-picker-popup.hidden { display: none; }
+.emoji-option {
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.15s;
+  border: none;
+  background: transparent;
+}
+.emoji-option:hover { background: var(--bg3); }
 
 /* ═══════════════════════════════════════════════
    TOAST / ACHIEVEMENT POPUP
@@ -705,7 +798,6 @@ html, body {
 }
 
 .toast-icon { font-size: 24px; }
-.toast-body {}
 .toast-title { font-size: 13px; font-weight: 900; color: var(--yellow); margin-bottom: 2px; }
 .toast-desc { font-size: 11px; color: var(--muted); }
 
@@ -738,8 +830,10 @@ html, body {
   <!-- ── TOPBAR ─────────────────────────────── -->
   <div id="topbar">
     <span class="logo">⚡ 觉醒系统</span>
-    <span class="tagline">AWAKENING SYSTEM v1.0</span>
-    <div class="spacer"></div>
+    <span class="tagline">AWAKENING SYSTEM</span>
+    <div id="quote-ticker">
+      <span id="quote-text"></span>
+    </div>
     <span class="date-chip" id="today-date"></span>
   </div>
 
@@ -753,6 +847,9 @@ html, body {
     </div>
     <div class="nav-item" data-page="achievements">
       <span class="nav-icon">🏆</span> 成就殿堂
+    </div>
+    <div class="nav-item" data-page="history">
+      <span class="nav-icon">📋</span> 历史记录
     </div>
     <div class="nav-item" data-page="settings">
       <span class="nav-icon">⚙️</span> 系统设置
@@ -922,9 +1019,36 @@ html, body {
     <div id="page-achievements" class="page">
       <div class="card">
         <div class="card-title">成就殿堂</div>
+        <div class="ach-tabs" id="ach-tabs">
+          <div class="ach-tab active" data-cat="全部">全部</div>
+          <div class="ach-tab" data-cat="行动">⚡ 行动</div>
+          <div class="ach-tab" data-cat="连续">🔥 连续</div>
+          <div class="ach-tab" data-cat="等级">⭐ 等级</div>
+          <div class="ach-tab" data-cat="坚持">📅 坚持</div>
+          <div class="ach-tab" data-cat="经验">📈 经验</div>
+          <div class="ach-tab" data-cat="特殊">✨ 特殊</div>
+        </div>
+        <div class="ach-summary" id="ach-summary"></div>
         <div class="ach-grid" id="ach-grid">
           <div style="color:var(--muted);padding:20px">加载中...</div>
         </div>
+      </div>
+    </div>
+
+    <!-- ╔══ HISTORY PAGE ══╗ -->
+    <div id="page-history" class="page">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+        <div style="font-size:15px;font-weight:900;color:var(--orange);letter-spacing:2px">历史记录</div>
+        <div style="font-size:12px;color:var(--muted)">含已删除习惯的打卡记录</div>
+        <div style="flex:1"></div>
+        <select id="history-days" onchange="loadHistory()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:12px;font-family:inherit;outline:none;">
+          <option value="30">最近 30 天</option>
+          <option value="60" selected>最近 60 天</option>
+          <option value="90">最近 90 天</option>
+        </select>
+      </div>
+      <div id="history-list">
+        <div style="color:var(--muted);text-align:center;padding:40px">加载中...</div>
       </div>
     </div>
 
@@ -945,7 +1069,7 @@ html, body {
         <div class="card-title">习惯管理</div>
         <div class="habit-mgmt-list" id="habit-mgmt-list" style="margin-bottom:16px"></div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px;align-items:end">
+        <div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px;align-items:end;position:relative;">
           <div class="form-group" style="margin:0">
             <label>名称</label>
             <input type="text" id="new-habit-name" placeholder="读书 30分钟" />
@@ -959,9 +1083,11 @@ html, body {
               <option value="reflection">✍️ 自我反思</option>
             </select>
           </div>
-          <div class="form-group" style="margin:0">
+          <div class="form-group" style="margin:0;position:relative">
             <label>图标</label>
-            <input type="text" id="new-habit-icon" placeholder="📖" style="width:60px;text-align:center" maxlength="2"/>
+            <button class="emoji-btn" id="emoji-btn" onclick="toggleEmojiPicker(event)">⚡</button>
+            <div class="emoji-picker-popup hidden" id="emoji-picker" style="position:absolute;bottom:50px;left:0">
+            </div>
           </div>
           <button class="btn btn-primary" style="align-self:end" onclick="addHabit()">+ 添加</button>
         </div>
@@ -975,6 +1101,74 @@ html, body {
 <div id="toast-container"></div>
 
 <script>
+// ═══════════════════════════════════════════════
+//  QUOTES（热血动漫 + 自励）
+// ═══════════════════════════════════════════════
+const QUOTES = [
+  '「不管被打倒多少次，都要再站起来。」——《钻石王牌》',
+  '「投出全力，这就是我的一球。」——《钻石王牌》',
+  '「诶！今天也赢了！」——日向翔阳《排球少年》',
+  '「最强的是团队，最弱的也是团队。」——《排球少年》',
+  '「眼前每一球，都是最后一球的拼劲。」——《钻石王牌》',
+  '「一步都不能退。退一步就是死！」——《进击的巨人》',
+  '「不管结果如何，先行动！」——《火影忍者》',
+  '「超越极限！Plus Ultra！」——《我的英雄学院》',
+  '「用尽全力地燃烧吧！」——《排球少年》',
+  '「诶！还能继续！」——日向翔阳',
+  '「所谓天才，就是不断努力的人。」',
+  '「每天进步 1%，一年后强 37 倍。」——《原子习惯》',
+  '「习惯是复利，今天的坚持是明天的利息。」',
+  '「胸中的热血，永远不会熄灭。」——觉醒系统',
+];
+
+let quoteIdx = 0;
+function cycleQuote() {
+  const el = document.getElementById('quote-text');
+  el.classList.remove('visible');
+  setTimeout(() => {
+    el.textContent = QUOTES[quoteIdx % QUOTES.length];
+    quoteIdx++;
+    el.classList.add('visible');
+  }, 600);
+}
+cycleQuote();
+setInterval(cycleQuote, 9000);
+
+// ═══════════════════════════════════════════════
+//  EMOJI PICKER
+// ═══════════════════════════════════════════════
+const EMOJIS = [
+  '📚','📖','✏️','🏋️','🏃','🧘','💧','🛌',
+  '🥗','🎯','⚡','🔥','💪','🧠','💻','🎵',
+  '🎨','✍️','📝','🌅','🚴','🏊','🤸','💊',
+  '🍎','🌿','📅','🎖️','🧩','🏆','🌙','☀️',
+  '🎋','🦁','🦅','🌊','⚔️','🛡️','🔮','🚀',
+];
+
+let selectedEmoji = '⚡';
+
+function initEmojiPicker() {
+  const picker = document.getElementById('emoji-picker');
+  picker.innerHTML = EMOJIS.map(e =>
+    `<button class="emoji-option" onclick="selectEmoji('${e}')">${e}</button>`
+  ).join('');
+}
+
+function selectEmoji(e) {
+  selectedEmoji = e;
+  document.getElementById('emoji-btn').textContent = e;
+  document.getElementById('emoji-picker').classList.add('hidden');
+}
+
+function toggleEmojiPicker(evt) {
+  evt.stopPropagation();
+  document.getElementById('emoji-picker').classList.toggle('hidden');
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('emoji-picker')?.classList.add('hidden');
+});
+
 // ═══════════════════════════════════════════════
 //  API
 // ═══════════════════════════════════════════════
@@ -996,9 +1190,10 @@ document.querySelectorAll('.nav-item').forEach(item => {
     item.classList.add('active');
     const page = item.dataset.page;
     document.getElementById('page-' + page).classList.add('active');
-    if (page === 'analytics') loadAnalytics();
+    if (page === 'analytics')    loadAnalytics();
     if (page === 'achievements') loadAchievements();
-    if (page === 'settings') loadSettings();
+    if (page === 'history')      loadHistory();
+    if (page === 'settings')     loadSettings();
   });
 });
 
@@ -1031,12 +1226,11 @@ async function loadDashboard() {
 
   // Cat stats
   const cs = analytics.category_stats;
-  const cats = ['study','exercise','focus','reflection'];
-  cats.forEach(cat => {
+  ['study','exercise','focus','reflection'].forEach(cat => {
     const el = document.getElementById('stat-' + cat);
     const vl = document.getElementById('stat-' + cat + '-val');
-    if (el) { el.style.width = cs[cat].score + '%'; }
-    if (vl) { vl.textContent = cs[cat].score; }
+    if (el) el.style.width = cs[cat].score + '%';
+    if (vl) vl.textContent = cs[cat].score;
   });
 
   // System message
@@ -1048,8 +1242,7 @@ async function loadDashboard() {
   // Momentum gauge
   const mom = analytics.momentum;
   document.getElementById('gauge-val').textContent = mom;
-  const circumference = 314;
-  const offset = circumference - (mom / 100) * circumference;
+  const offset = 314 - (mom / 100) * 314;
   document.getElementById('gauge-circle').style.strokeDashoffset = offset;
 
   // Boss battle
@@ -1057,14 +1250,13 @@ async function loadDashboard() {
   document.getElementById('boss-name').textContent = boss.boss_name;
   document.getElementById('boss-desc').textContent = boss.boss_desc;
   const bossBar = document.getElementById('boss-bar');
-  const rate = boss.rate;
-  bossBar.style.width = Math.min(rate, 100) + '%';
-  bossBar.style.background = rate >= 80
+  bossBar.style.width = Math.min(boss.rate, 100) + '%';
+  bossBar.style.background = boss.rate >= 80
     ? 'linear-gradient(90deg,#34c759,#00ff7f)'
     : 'linear-gradient(90deg,#ff3b30,#ff6b35)';
   const rateText = document.getElementById('boss-rate-text');
-  rateText.textContent = rate + '%';
-  rateText.className = rate >= 80 ? 'boss-win' : 'boss-fail';
+  rateText.textContent = boss.rate + '%';
+  rateText.className = boss.rate >= 80 ? 'boss-win' : 'boss-fail';
 }
 
 function renderHabitList(habits) {
@@ -1077,7 +1269,19 @@ function renderHabitList(habits) {
     return;
   }
 
-  list.innerHTML = habits.map(h => `
+  list.innerHTML = habits.map(h => {
+    // Dynamic EXP tag
+    let dynTag = '';
+    if (h.dynamic_exp && h.dynamic_exp !== h.base_exp) {
+      const diff = h.dynamic_exp - h.base_exp;
+      if (diff > 0) {
+        dynTag = `<span class="dyn-exp-tag up">↑ 难度加成</span>`;
+      } else {
+        dynTag = `<span class="dyn-exp-tag down">↓ 已熟练</span>`;
+      }
+    }
+
+    return `
     <div class="habit-card ${h.completed ? 'done' : ''}" id="hcard-${h.id}" onclick="toggleHabit(${h.id}, this)">
       <span class="habit-icon">${h.icon}</span>
       <div class="habit-info">
@@ -1087,28 +1291,29 @@ function renderHabitList(habits) {
         </div>
       </div>
       <div class="habit-right">
-        <span class="exp-badge">+${h.exp_preview} EXP</span>
+        <div class="exp-badge-wrap">
+          <span class="exp-badge">+${h.exp_preview} EXP</span>
+          ${dynTag}
+        </div>
         <button class="check-btn ${h.completed ? 'done' : ''}">${h.completed ? '✓' : ''}</button>
       </div>
     </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 async function toggleHabit(habitId, cardEl) {
   const result = await API.post('/api/checkin/' + habitId);
 
-  // EXP float animation
   if (result.exp_delta > 0) {
     const rect = cardEl.getBoundingClientRect();
     showExpFloat('+' + result.exp_delta + ' EXP', rect.right - 80, rect.top + 10);
   }
 
-  // New achievements
   if (result.new_achievements && result.new_achievements.length > 0) {
     result.new_achievements.forEach(ach => showAchievementToast(ach));
   }
 
-  // Refresh
   await loadDashboard();
 }
 
@@ -1155,7 +1360,6 @@ async function loadAnalytics() {
   document.getElementById('an-total-exp').textContent = user.total_exp;
   document.getElementById('an-system-msg').textContent = analytics.system_message;
 
-  // History chart
   const hist = analytics.daily_history;
   const histLabels = hist.map(d => d.date.slice(5));
   const histData = hist.map(d => d.total > 0 ? Math.round(d.done / d.total * 100) : 0);
@@ -1185,7 +1389,6 @@ async function loadAnalytics() {
     },
   });
 
-  // Radar chart
   const cs = analytics.category_stats;
   if (radarChart) radarChart.destroy();
   radarChart = new Chart(document.getElementById('chart-radar'), {
@@ -1218,35 +1421,60 @@ async function loadAnalytics() {
     },
   });
 
-  // Category cards
-  const catGrid = document.getElementById('cat-grid');
-  catGrid.innerHTML = ['study','exercise','focus','reflection'].map(cat => {
-    const c = cs[cat];
-    return `
-      <div class="cat-item">
-        <div class="cat-header">
-          <span class="cat-icon">${c.icon}</span>
-          <span class="cat-name" style="color:${c.color}">${c.name}</span>
-        </div>
-        <div class="cat-score-row">
-          <div class="cat-bar-bg">
-            <div class="cat-bar-fill" style="width:${c.score}%;background:${c.color}"></div>
+  document.getElementById('cat-grid').innerHTML =
+    ['study','exercise','focus','reflection'].map(cat => {
+      const c = cs[cat];
+      return `
+        <div class="cat-item">
+          <div class="cat-header">
+            <span class="cat-icon">${c.icon}</span>
+            <span class="cat-name" style="color:${c.color}">${c.name}</span>
           </div>
-          <span class="cat-pct" style="color:${c.color}">${c.score}%</span>
+          <div class="cat-score-row">
+            <div class="cat-bar-bg">
+              <div class="cat-bar-fill" style="width:${c.score}%;background:${c.color}"></div>
+            </div>
+            <span class="cat-pct" style="color:${c.color}">${c.score}%</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">30天完成 ${c.done} 次</div>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:6px">30天完成 ${c.done} 次</div>
-      </div>
-    `;
-  }).join('');
+      `;
+    }).join('');
 }
 
 // ═══════════════════════════════════════════════
 //  ACHIEVEMENTS
 // ═══════════════════════════════════════════════
+let allAchs = [];
+let currentAchCat = '全部';
+
+document.querySelectorAll('.ach-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.ach-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentAchCat = tab.dataset.cat;
+    renderAchievements();
+  });
+});
+
 async function loadAchievements() {
-  const achs = await API.get('/api/achievements');
-  const grid = document.getElementById('ach-grid');
-  grid.innerHTML = achs.map(a => `
+  allAchs = await API.get('/api/achievements');
+  renderAchievements();
+}
+
+function renderAchievements() {
+  const filtered = currentAchCat === '全部'
+    ? allAchs
+    : allAchs.filter(a => a.cat === currentAchCat);
+
+  const unlocked = filtered.filter(a => a.is_unlocked).length;
+  document.getElementById('ach-summary').innerHTML =
+    `共 <span>${filtered.length}</span> 个成就 · 已解锁 <span>${unlocked}</span> 个`;
+
+  // Sort: unlocked first, then locked
+  const sorted = [...filtered].sort((a, b) => b.is_unlocked - a.is_unlocked);
+
+  document.getElementById('ach-grid').innerHTML = sorted.map(a => `
     <div class="ach-card ${a.is_unlocked ? 'unlocked' : 'locked'}">
       <span class="ach-icon">${a.icon}</span>
       <div class="ach-body">
@@ -1258,6 +1486,63 @@ async function loadAchievements() {
       </div>
     </div>
   `).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  HISTORY
+// ═══════════════════════════════════════════════
+async function loadHistory() {
+  const days = document.getElementById('history-days')?.value || 60;
+  const logs = await API.get('/api/history?days=' + days);
+
+  if (!logs.length) {
+    document.getElementById('history-list').innerHTML =
+      '<div style="color:var(--muted);text-align:center;padding:40px">暂无记录</div>';
+    return;
+  }
+
+  // Group by date
+  const byDate = {};
+  logs.forEach(l => {
+    if (!byDate[l.date]) byDate[l.date] = [];
+    byDate[l.date].push(l);
+  });
+
+  const dates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
+
+  document.getElementById('history-list').innerHTML = dates.map(date => {
+    const dayLogs = byDate[date];
+    const doneCnt = dayLogs.filter(l => l.completed).length;
+    const rows = dayLogs
+      .filter(l => l.completed)
+      .map(l => {
+        const deletedTag = l.is_deleted
+          ? `<span class="deleted-tag">已删除</span>`
+          : '';
+        const streakTxt = l.streak_count > 1
+          ? `<span style="color:var(--orange);font-size:10px;margin-left:8px">🔥 ${l.streak_count}连</span>`
+          : '';
+        return `
+          <div class="history-log-row">
+            <span class="history-log-icon">${l.icon}</span>
+            <div class="history-log-name">${l.name}${deletedTag}${streakTxt}</div>
+            <span class="history-log-exp">+${l.exp_earned} EXP</span>
+          </div>
+        `;
+      }).join('');
+
+    if (!rows) return '';
+
+    return `
+      <div class="history-day">
+        <div class="history-day-header">
+          <span class="history-day-date">${date}</span>
+          <span class="history-day-count">完成 ${doneCnt} 项</span>
+        </div>
+        ${rows}
+      </div>
+    `;
+  }).filter(Boolean).join('');
 }
 
 // ═══════════════════════════════════════════════
@@ -1277,6 +1562,7 @@ async function loadSettings() {
       <span class="habit-mgmt-icon">${h.icon}</span>
       <span class="habit-mgmt-name">${h.name}</span>
       <span class="habit-mgmt-cat">${catLabels[h.category] || h.category}</span>
+      <span style="font-size:11px;color:var(--muted)">基础 ${h.base_exp} EXP</span>
       <button class="btn btn-danger" style="padding:4px 12px;font-size:11px" onclick="removeHabit(${h.id})">删除</button>
     </div>
   `).join('');
@@ -1293,18 +1579,20 @@ async function saveName() {
 async function addHabit() {
   const name = document.getElementById('new-habit-name').value.trim();
   const cat  = document.getElementById('new-habit-cat').value;
-  const icon = document.getElementById('new-habit-icon').value.trim() || '⚡';
+  const icon = selectedEmoji || '⚡';
   if (!name) { showToast('⚠️', '请输入习惯名称', ''); return; }
 
   await API.post('/api/habits', { name, category: cat, icon, base_exp: 100 });
   document.getElementById('new-habit-name').value = '';
-  document.getElementById('new-habit-icon').value = '';
+  selectedEmoji = '⚡';
+  document.getElementById('emoji-btn').textContent = '⚡';
   showToast('✅', '习惯已添加', name + ' 已加入任务系统');
   await loadSettings();
 }
 
 async function removeHabit(id) {
   await API.delete('/api/habits/' + id);
+  showToast('🗑️', '习惯已删除', '历史记录将保留');
   await loadSettings();
 }
 
@@ -1327,6 +1615,7 @@ function showToast(icon, title, desc) {
 // ═══════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════
+initEmojiPicker();
 loadDashboard();
 </script>
 </body>

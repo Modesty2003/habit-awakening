@@ -19,6 +19,7 @@ from backend.analytics import (
     calculate_streak_for_habit,
     calculate_global_streak,
     calculate_exp_with_streak,
+    calculate_dynamic_exp,
     calculate_momentum,
     calculate_consistency,
     calculate_category_stats,
@@ -182,13 +183,15 @@ def get_today():
         for h in habits:
             log = today_logs.get(h["id"], {})
             streak = calculate_streak_for_habit(h["id"], logs, date.today())
-            exp_preview = calculate_exp_with_streak(h["base_exp"], streak)
+            dyn_exp = calculate_dynamic_exp(h["base_exp"], h["id"], logs)
+            exp_preview = calculate_exp_with_streak(dyn_exp, streak)
             result.append({
                 **h,
                 "completed": bool(log.get("completed", 0)),
                 "exp_earned": log.get("exp_earned", 0),
                 "streak": streak,
                 "exp_preview": exp_preview,
+                "dynamic_exp": dyn_exp,  # 动态难度调整后的基础值
             })
         return {"date": today_str, "habits": result}
     finally:
@@ -212,7 +215,6 @@ def toggle_checkin(habit_id: int):
         ).fetchone()
 
         if existing and existing["completed"]:
-            # 取消打卡，回收 EXP
             exp_row = conn.execute(
                 "SELECT exp_earned FROM habit_logs WHERE habit_id=? AND date=?",
                 (habit_id, today_str),
@@ -229,9 +231,10 @@ def toggle_checkin(habit_id: int):
             conn.commit()
             return {"completed": False, "exp_earned": 0, "exp_delta": -exp_to_remove}
         else:
-            # 完成打卡
+            # 完成打卡：先算动态 EXP，再叠加连击加成
             streak = calculate_streak_for_habit(habit_id, logs, date.today())
-            exp_earned = calculate_exp_with_streak(habit["base_exp"], streak)
+            dyn_exp = calculate_dynamic_exp(habit["base_exp"], habit_id, logs)
+            exp_earned = calculate_exp_with_streak(dyn_exp, streak)
             conn.execute(
                 """INSERT INTO habit_logs (habit_id, date, completed, exp_earned, streak_count, completed_at)
                    VALUES (?, ?, 1, ?, ?, datetime('now'))
@@ -316,7 +319,7 @@ def get_achievements():
     conn = get_db()
     try:
         rows = conn.execute(
-            "SELECT key, name, description, icon, is_unlocked, unlocked_at FROM achievements ORDER BY is_unlocked DESC, id"
+            "SELECT key, name, description, icon, cat, is_unlocked, unlocked_at FROM achievements ORDER BY is_unlocked DESC, id"
         ).fetchall()
         return [dict(r) for r in rows]
     finally:
@@ -332,9 +335,12 @@ def get_history(days: int = 60):
         cutoff = str(date.today() - timedelta(days=days))
         rows = conn.execute(
             """SELECT hl.habit_id, hl.date, hl.completed, hl.exp_earned, hl.streak_count,
-                      h.name, h.category, h.icon
+                      COALESCE(h.name, '[已删除]') AS name,
+                      COALESCE(h.category, 'unknown') AS category,
+                      COALESCE(h.icon, '🗑️') AS icon,
+                      CASE WHEN h.id IS NULL THEN 1 ELSE 0 END AS is_deleted
                FROM habit_logs hl
-               JOIN habits h ON h.id = hl.habit_id
+               LEFT JOIN habits h ON h.id = hl.habit_id
                WHERE hl.date >= ? ORDER BY hl.date DESC""",
             (cutoff,),
         ).fetchall()

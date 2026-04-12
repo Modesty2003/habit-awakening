@@ -53,10 +53,18 @@ def init_db():
             name TEXT NOT NULL,
             description TEXT,
             icon TEXT DEFAULT '🏆',
+            cat TEXT DEFAULT '特殊',
             unlocked_at TEXT,
             is_unlocked INTEGER DEFAULT 0
         );
     """)
+
+    # 迁移：旧表可能没有 cat 列
+    try:
+        cursor.execute("ALTER TABLE achievements ADD COLUMN cat TEXT DEFAULT '特殊'")
+        conn.commit()
+    except Exception:
+        pass
 
     # Default user
     cursor.execute("INSERT OR IGNORE INTO users (id, name) VALUES (1, '觉醒者')")
@@ -65,38 +73,77 @@ def init_db():
     cursor.execute("SELECT COUNT(*) FROM habits")
     if cursor.fetchone()[0] == 0:
         default_habits = [
-            ("读书 / 学习", "study", "📚", 100, 0),
-            ("运动 / 健身", "exercise", "🏃", 120, 1),
-            ("深度专注工作", "focus", "⚡", 150, 2),
-            ("自我反思写作", "reflection", "✍️", 80, 3),
+            ("读书 / 学习",   "study",      "📚", 100, 0),
+            ("运动 / 健身",   "exercise",   "🏃", 120, 1),
+            ("深度专注工作",  "focus",      "⚡", 150, 2),
+            ("自我反思写作",  "reflection", "✍️",  80, 3),
         ]
         cursor.executemany(
             "INSERT INTO habits (name, category, icon, base_exp, sort_order) VALUES (?, ?, ?, ?, ?)",
             default_habits,
         )
 
-    # Achievements
-    achievements = [
-        ("first_checkin", "觉醒者", "完成第一次打卡，踏上了征途", "🌟"),
-        ("streak_3", "初显锋芒", "连续打卡3天，习惯开始生根", "🔥"),
-        ("streak_7", "燃烧的意志", "连续打卡7天，七天不灭之火", "🔥🔥"),
-        ("streak_14", "钢铁意志", "连续打卡14天，两周的坚持", "💪"),
-        ("streak_30", "永不放弃的少年", "连续打卡30天，你就是传说", "👑"),
-        ("perfect_day", "完美一天", "单日完成全部习惯，超越自我", "⚡"),
-        ("perfect_week", "完美一周", "一周内每天完成全部习惯", "🌈"),
-        ("level_5", "实力初现", "达到5级，觉醒已开始", "🦅"),
-        ("level_10", "觉醒完成", "达到10级，脱胎换骨", "🏆"),
-        ("level_20", "传说境界", "达到20级，你已超越常人", "👑"),
-        ("boss_first_win", "初战告捷", "首次赢得每周BOSS战", "⚔️"),
-        ("boss_streak_3", "连续击破", "连续3周赢得BOSS战", "🗡️"),
-        ("exp_500", "百战余生", "累计获得500 EXP", "💫"),
-        ("exp_2000", "千锤百炼", "累计获得2000 EXP", "💎"),
-        ("comeback", "浴火重生", "中断后重新连击超过3天", "🔄"),
+    # ── 完整成就列表（合并自习惯传说）────────────────────────────────────────
+    ALL_ACHIEVEMENTS = [
+        # 行动累计
+        ("act_1",    "第一步",        "累计完成 1 次打卡",               "⚡",   "行动"),
+        ("act_10",   "初见成效",      "累计完成 10 次打卡",              "🔟",   "行动"),
+        ("act_50",   "五十践行",      "累计完成 50 次打卡",              "🎯",   "行动"),
+        ("act_100",  "百次突破",      "累计完成 100 次打卡",             "💯",   "行动"),
+        ("act_200",  "全力投球",      "累计 200 次·「投出灵魂的一球」",   "⚾",   "行动"),
+        ("act_500",  "行动传说",      "累计完成 500 次打卡",             "🚀",   "行动"),
+        ("act_1000", "Plus Ultra",   "累计 1000 次·「更进一步！」",      "👊",   "行动"),
+        ("act_2000", "龙珠觉醒",      "累计 2000 次·超越极限",           "🐉",   "行动"),
+        # 连续
+        ("streak_3",   "三日之约",      "连续 3 天完成打卡",             "🔥",   "连续"),
+        ("streak_7",   "周而复始",      "连续 7 天完成打卡",             "🔥",   "连续"),
+        ("streak_14",  "排球少年",      "连续 14 天·再投一球",           "⚾",   "连续"),
+        ("streak_21",  "王牌投手",      "连续 21 天·稳定登板的王牌！",   "🏐",   "连续"),
+        ("streak_30",  "月度坚持",      "连续 30 天完成打卡",            "🌊",   "连续"),
+        ("streak_60",  "不屈斗志",      "连续 60 天·越挫越勇",           "🗡️",  "连续"),
+        ("streak_100", "百日传奇",      "连续 100 天完成打卡",           "👑",   "连续"),
+        ("streak_200", "海贼王的意志",  "连续 200 天·追逐大秘宝",        "🏴‍☠️", "连续"),
+        ("streak_365", "一整年的约定",  "连续 365 天·封神之路",          "☀️",   "连续"),
+        # 等级
+        ("level_5",   "初露锋芒",  "达到 Lv.5",                  "⭐",  "等级"),
+        ("level_10",  "身份觉醒",  "达到 Lv.10",                 "🌟",  "等级"),
+        ("level_20",  "身份大师",  "达到 Lv.20",                 "👑",  "等级"),
+        ("level_30",  "超级赛亚人","Lv.30·突破战斗力极限",        "🔱",  "等级"),
+        ("level_50",  "传奇存在",  "达到 Lv.50",                 "🏆",  "等级"),
+        ("level_75",  "压力！！！","Lv.75·忍者最高境界",          "🉐",  "等级"),
+        ("level_100", "钻石王牌",  "Lv.100·坚忍淡定有毅力的投球！","💎", "等级"),
+        # 坚持天数
+        ("days_7",   "周周确认", "累计打卡 7 天",   "📋", "坚持"),
+        ("days_30",  "月月不落", "累计打卡 30 天",  "📅", "坚持"),
+        ("days_60",  "两个月！", "累计打卡 60 天",  "🚀", "坚持"),
+        ("days_100", "百日筑基", "累计打卡 100 天", "🏅", "坚持"),
+        ("days_200", "二百之数", "累计打卡 200 天", "📜", "坚持"),
+        ("days_365", "365的1%",  "累计打卡 365 天", "🌸", "坚持"),
+        # 经验
+        ("exp_1k",   "1%复利",   "总经验达到 1,000",   "📈", "经验"),
+        ("exp_5k",   "原子蜕变", "总经验达到 5,000",   "💪", "经验"),
+        ("exp_10k",  "身份革命", "总经验达到 10,000",  "🧬", "经验"),
+        ("exp_50k",  "系统之力", "总经验达到 50,000",  "🔮", "经验"),
+        ("exp_100k", "改变世界", "总经验达到 100,000", "🌍", "经验"),
+        # 特殊
+        ("first_checkin", "觉醒者",   "完成第一次打卡，踏上征途",   "🌱", "特殊"),
+        ("perfect_day",   "完美一天", "单日完成全部习惯",           "✨", "特殊"),
+        ("perfect_week",  "全垒打",   "一周内每天完成全部习惯",     "💫", "特殊"),
+        ("burst_5",       "爆发日",   "单日完成 ≥5 个打卡",        "🌋", "特殊"),
+        ("burst_10",      "极限突破", "单日完成 ≥10 个打卡",       "💥", "特殊"),
+        ("comeback",      "浴火重生", "中断后重新开始连击",         "🔄", "特殊"),
     ]
-    cursor.executemany(
-        "INSERT OR IGNORE INTO achievements (key, name, description, icon) VALUES (?, ?, ?, ?)",
-        achievements,
-    )
+    for key, name, desc, icon, cat in ALL_ACHIEVEMENTS:
+        cursor.execute(
+            """INSERT OR IGNORE INTO achievements (key, name, description, icon, cat)
+               VALUES (?, ?, ?, ?, ?)""",
+            (key, name, desc, icon, cat),
+        )
+        # 始终同步 name/description/icon/cat（支持旧数据迁移）
+        cursor.execute(
+            "UPDATE achievements SET name=?, description=?, icon=?, cat=? WHERE key=?",
+            (name, desc, icon, cat, key),
+        )
 
     conn.commit()
     conn.close()
