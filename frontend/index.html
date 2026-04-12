@@ -289,6 +289,173 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .toast-desc { font-size: 11px; color: var(--muted); }
 
 /* ═══════════════════════════════════════════════
+   CHARACTER PAGE
+═══════════════════════════════════════════════ */
+#page-character { flex-direction: row; gap: 24px; align-items: flex-start; }
+.char-page-left  { display: flex; flex-direction: column; gap: 16px; width: 320px; flex-shrink: 0; }
+.char-page-right { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+/* 3D Card container */
+.avatar-card-scene {
+  width: 280px; margin: 0 auto;
+  perspective: 800px;
+}
+.avatar-card {
+  position: relative; width: 280px; height: 400px;
+  border-radius: 20px; overflow: hidden;
+  transform-style: preserve-3d;
+  transition: transform 0.08s linear;
+  cursor: pointer;
+  background: linear-gradient(145deg, #0d1422, #1a2035, #0d1422);
+  border: 1px solid rgba(255,107,53,0.25);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 30px rgba(255,107,53,0.15);
+}
+
+/* Holographic foil overlay */
+.avatar-card-holo {
+  position: absolute; inset: 0; border-radius: 20px; z-index: 10;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+  background: conic-gradient(from 0deg at 50% 50%,
+    rgba(255,107,53,0.15) 0deg,
+    rgba(255,215,0,0.15) 60deg,
+    rgba(74,158,255,0.12) 120deg,
+    rgba(175,82,222,0.12) 180deg,
+    rgba(52,199,89,0.1)  240deg,
+    rgba(255,107,53,0.15) 300deg,
+    rgba(255,215,0,0.15) 360deg);
+  mix-blend-mode: screen;
+  background-size: 200% 200%;
+}
+.avatar-card:hover .avatar-card-holo { opacity: 1; }
+
+/* Shine sweep */
+.avatar-card-shine {
+  position: absolute; inset: 0; border-radius: 20px; z-index: 11;
+  opacity: 0; pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 65%);
+  transition: opacity 0.2s;
+}
+.avatar-card:hover .avatar-card-shine { opacity: 1; }
+
+/* Card top badge */
+.avatar-card-badge {
+  position: absolute; top: 14px; left: 14px; z-index: 20;
+  display: flex; align-items: center; gap: 8px;
+}
+.avatar-card-level {
+  background: linear-gradient(135deg, var(--orange), var(--yellow));
+  color: #000; font-size: 11px; font-weight: 900; padding: 3px 10px;
+  border-radius: 20px; letter-spacing: 1px;
+}
+.avatar-card-id {
+  font-size: 9px; color: rgba(255,255,255,0.3); letter-spacing: 2px; font-weight: 700;
+}
+
+/* Scan lines texture */
+.avatar-card::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: 20px; z-index: 1;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px, rgba(255,107,53,0.02) 3px, rgba(255,107,53,0.02) 4px
+  );
+  pointer-events: none;
+}
+
+/* Corner decorations */
+.avatar-card-corner {
+  position: absolute; width: 20px; height: 20px; z-index: 20; border-color: rgba(255,107,53,0.5);
+  border-style: solid;
+}
+.corner-tl { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
+.corner-tr { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
+.corner-bl { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
+.corner-br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
+
+/* Card bottom info strip */
+.avatar-card-info {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 20;
+  padding: 20px 18px 18px;
+  background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, transparent 100%);
+}
+.avatar-card-name {
+  font-size: 18px; font-weight: 900; letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--text), var(--yellow));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 2px;
+}
+.avatar-card-title {
+  font-size: 11px; color: var(--orange); letter-spacing: 3px; font-weight: 700;
+  margin-bottom: 8px;
+}
+.avatar-card-expbar {
+  height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;
+}
+.avatar-card-expfill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--orange), var(--yellow));
+  border-radius: 2px; transition: width 1s ease;
+  box-shadow: 0 0 6px var(--orange);
+}
+
+/* SVG character wrapper — parallax layers */
+.char-svg-wrap {
+  position: absolute; inset: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: center;
+}
+.char-svg-wrap svg { width: 100%; height: 100%; }
+.char-layer { transition: transform 0.12s linear; will-change: transform; }
+
+/* Customization panel */
+.custom-section { margin-bottom: 12px; }
+.custom-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+.theme-options { display: flex; gap: 8px; }
+.theme-dot {
+  width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent; transition: all 0.2s;
+  position: relative;
+}
+.theme-dot:hover { transform: scale(1.15); }
+.theme-dot.active { border-color: white; box-shadow: 0 0 12px currentColor; }
+.theme-dot .theme-name {
+  position: absolute; bottom: 38px; left: 50%; transform: translateX(-50%);
+  background: var(--bg2); border: 1px solid var(--border);
+  font-size: 10px; white-space: nowrap; padding: 2px 6px; border-radius: 4px;
+  pointer-events: none; opacity: 0; transition: opacity 0.2s;
+}
+.theme-dot:hover .theme-name { opacity: 1; }
+
+/* Stats panel on right */
+.char-stat-section { margin-bottom: 4px; }
+.char-stat-header { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+.char-attr-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.char-attr-icon { font-size: 16px; width: 22px; text-align: center; }
+.char-attr-label { font-size: 12px; font-weight: 700; width: 36px; }
+.char-attr-bar { flex: 1; background: var(--bg3); border-radius: 4px; height: 7px; overflow: hidden; }
+.char-attr-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+.char-attr-score { font-size: 12px; font-weight: 700; width: 30px; text-align: right; }
+
+/* Achievement badges on char page */
+.char-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+.char-badge {
+  display: flex; align-items: center; gap: 6px; padding: 6px 12px;
+  background: linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,107,53,0.06));
+  border: 1px solid rgba(255,215,0,0.2); border-radius: 20px; font-size: 12px;
+}
+.char-badge-icon { font-size: 14px; }
+.char-badge-name { font-weight: 700; font-size: 11px; color: var(--yellow); }
+
+/* Info chips row */
+.char-info-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.info-chip {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 12px 18px; background: var(--bg3); border-radius: 10px;
+  border: 1px solid var(--border); flex: 1; min-width: 80px;
+}
+.info-chip-val { font-size: 22px; font-weight: 900; }
+.info-chip-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+
+/* ═══════════════════════════════════════════════
    SCROLLBAR + UTILS
 ═══════════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 6px; }
@@ -317,6 +484,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   <!-- SIDEBAR -->
   <nav id="sidebar">
     <div class="nav-item active" data-page="dashboard"><span class="nav-icon">🏠</span> 主界面</div>
+    <div class="nav-item" data-page="character"><span class="nav-icon">👤</span> 角色档案</div>
     <div class="nav-item" data-page="analytics"><span class="nav-icon">📊</span> 战况报告</div>
     <div class="nav-item" data-page="achievements"><span class="nav-icon">🏆</span> 成就殿堂</div>
     <div class="nav-item" data-page="challenges"><span class="nav-icon">🎯</span> 挑战模式</div>
@@ -428,6 +596,316 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
         </div>
 
       </div>
+    </div>
+
+    <!-- ╔══ CHARACTER ══╗ -->
+    <div id="page-character" class="page">
+
+      <!-- LEFT: 3D Card + Customize -->
+      <div class="char-page-left">
+
+        <!-- 3D Holographic Card -->
+        <div class="avatar-card-scene">
+          <div class="avatar-card" id="avatar-card">
+            <div class="avatar-card-holo" id="card-holo"></div>
+            <div class="avatar-card-shine" id="card-shine"></div>
+            <div class="avatar-card-corner corner-tl"></div>
+            <div class="avatar-card-corner corner-tr"></div>
+            <div class="avatar-card-corner corner-bl"></div>
+            <div class="avatar-card-corner corner-br"></div>
+
+            <!-- Badge top-left -->
+            <div class="avatar-card-badge">
+              <span class="avatar-card-level" id="card-level-badge">Lv. 1</span>
+              <span class="avatar-card-id">ID #001</span>
+            </div>
+
+            <!-- SVG Character — 5 parallax layers -->
+            <div class="char-svg-wrap" id="char-svg-wrap">
+              <svg viewBox="0 0 280 400" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <filter id="f-glow-eyes" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                  <filter id="f-aura" x="-40%" y="-40%" width="180%" height="180%">
+                    <feGaussianBlur stdDeviation="10"/>
+                  </filter>
+                  <filter id="f-glow-sm" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="4" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                  <radialGradient id="aura-base" cx="50%" cy="90%" r="50%">
+                    <stop offset="0%" stop-color="var(--char-primary,#ff6b35)" stop-opacity="0.55"/>
+                    <stop offset="100%" stop-color="var(--char-primary,#ff6b35)" stop-opacity="0"/>
+                  </radialGradient>
+                  <linearGradient id="body-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#151e2e"/>
+                    <stop offset="100%" stop-color="#0d1219"/>
+                  </linearGradient>
+                  <linearGradient id="jacket-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#1a2540"/>
+                    <stop offset="100%" stop-color="#111826"/>
+                  </linearGradient>
+                </defs>
+
+                <!-- LAYER 1: Aura/ground glow (slowest) -->
+                <g class="char-layer" data-depth="3">
+                  <ellipse cx="140" cy="370" rx="100" ry="22" fill="url(#aura-base)" filter="url(#f-aura)"/>
+                  <ellipse cx="140" cy="345" rx="90" ry="35" fill="url(#aura-base)" filter="url(#f-aura)" opacity="0.6"/>
+                  <circle cx="140" cy="310" r="100" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="0.6" opacity="0.2"/>
+                  <circle cx="140" cy="310" r="72" fill="none" stroke="var(--char-secondary,#ffd700)" stroke-width="0.6" opacity="0.25"/>
+                  <circle cx="140" cy="310" r="48" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="0.6" opacity="0.3"/>
+                </g>
+
+                <!-- LAYER 2: Body / outfit (medium-slow) -->
+                <g class="char-layer" data-depth="6">
+                  <!-- Legs -->
+                  <rect x="107" y="285" width="26" height="80" rx="8" fill="#0e1520"/>
+                  <rect x="147" y="285" width="26" height="80" rx="8" fill="#0e1520"/>
+                  <!-- Boots -->
+                  <path d="M105,352 Q105,368 115,368 L136,368 Q140,368 140,365 L140,352 Z" fill="#080d14"/>
+                  <path d="M145,352 Q145,368 155,368 L176,368 Q180,368 180,365 L180,352 Z" fill="#080d14"/>
+                  <!-- Boot highlight -->
+                  <rect x="108" y="353" width="12" height="2" rx="1" fill="var(--char-primary,#ff6b35)" opacity="0.3"/>
+                  <rect x="148" y="353" width="12" height="2" rx="1" fill="var(--char-primary,#ff6b35)" opacity="0.3"/>
+                  <!-- Torso / jacket -->
+                  <path d="M88,185 C82,200 80,290 107,290 L173,290 C200,290 198,200 192,185 Z" fill="url(#jacket-grad)"/>
+                  <!-- Jacket inner glow center -->
+                  <ellipse cx="140" cy="240" rx="16" ry="20" fill="var(--char-primary,#ff6b35)" opacity="0.25" filter="url(#f-glow-sm)"/>
+                  <ellipse cx="140" cy="238" rx="6" ry="8" fill="var(--char-secondary,#ffd700)" opacity="0.6" filter="url(#f-glow-sm)"/>
+                  <!-- Jacket lapels -->
+                  <path d="M140,210 L115,185 L108,225 Z" fill="url(#jacket-grad)" stroke="rgba(255,107,53,0.15)" stroke-width="1"/>
+                  <path d="M140,210 L165,185 L172,225 Z" fill="url(#jacket-grad)" stroke="rgba(255,107,53,0.15)" stroke-width="1"/>
+                  <!-- Collar -->
+                  <path d="M125,185 L140,205 L155,185" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                  <!-- Jacket seam line -->
+                  <line x1="140" y1="210" x2="140" y2="290" stroke="rgba(255,107,53,0.1)" stroke-width="1.5"/>
+                  <!-- Energy lines on jacket -->
+                  <path d="M115,250 Q140,240 165,250" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="0.8" opacity="0.35"/>
+                  <path d="M118,262 Q140,254 162,262" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="0.5" opacity="0.2"/>
+                  <!-- Arms -->
+                  <path d="M88,185 C82,190 75,210 78,255 L94,255 C98,220 96,195 110,185 Z" fill="url(#jacket-grad)"/>
+                  <path d="M192,185 C198,190 205,210 202,255 L186,255 C182,220 184,195 170,185 Z" fill="url(#jacket-grad)"/>
+                  <!-- Gloves/hands -->
+                  <ellipse cx="84" cy="262" rx="10" ry="12" fill="#0d1520"/>
+                  <ellipse cx="196" cy="262" rx="10" ry="12" fill="#0d1520"/>
+                  <!-- Shoulder pads -->
+                  <ellipse cx="95" cy="188" rx="14" ry="9" fill="#1e2d45" transform="rotate(-10,95,188)"/>
+                  <ellipse cx="185" cy="188" rx="14" ry="9" fill="#1e2d45" transform="rotate(10,185,188)"/>
+                  <path d="M84,182 Q95,175 106,182" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="1" opacity="0.4"/>
+                  <path d="M174,182 Q185,175 196,182" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="1" opacity="0.4"/>
+                </g>
+
+                <!-- LAYER 3: Head / skin (medium) -->
+                <g class="char-layer" data-depth="9">
+                  <!-- Neck -->
+                  <rect x="129" y="162" width="22" height="26" rx="6" fill="#c8915f"/>
+                  <!-- Head shape -->
+                  <path d="M98,115 Q96,72 140,68 Q184,72 182,115 L178,158 Q140,175 102,158 Z" fill="#c8915f"/>
+                  <!-- Jaw definition -->
+                  <path d="M102,150 Q140,168 178,150 L174,155 Q140,174 106,155 Z" fill="#b87d4a" opacity="0.5"/>
+                  <!-- Ears -->
+                  <ellipse cx="98" cy="118" rx="8" ry="11" fill="#c8915f"/>
+                  <ellipse cx="182" cy="118" rx="8" ry="11" fill="#c8915f"/>
+                  <ellipse cx="98" cy="118" rx="4" ry="7" fill="#b87a4a" opacity="0.5"/>
+                  <ellipse cx="182" cy="118" rx="4" ry="7" fill="#b87a4a" opacity="0.5"/>
+                </g>
+
+                <!-- LAYER 4: Face features + hair (faster) -->
+                <g class="char-layer" data-depth="13">
+                  <!-- Hair back layers -->
+                  <path d="M98,115 Q93,75 108,60 Q105,88 118,98 Z" fill="#18182e"/>
+                  <path d="M182,115 Q187,75 172,60 Q175,88 162,98 Z" fill="#18182e"/>
+                  <!-- Main hair mass -->
+                  <path d="M116,95 Q120,45 140,38 Q160,45 164,95 L155,108 L125,108 Z" fill="#1e1e38"/>
+                  <!-- Hair spikes / dynamic flow -->
+                  <path d="M116,95 Q108,52 116,42 Q118,68 125,88 Z" fill="#22223a"/>
+                  <path d="M164,95 Q172,52 164,42 Q162,68 155,88 Z" fill="#22223a"/>
+                  <!-- Spike top-left -->
+                  <path d="M124,72 Q118,38 128,28 Q130,50 136,68 Z" fill="#1e1e38"/>
+                  <!-- Spike top-center -->
+                  <path d="M133,60 Q138,22 140,18 Q142,22 147,60 L143,72 L137,72 Z" fill="#22223a"/>
+                  <!-- Spike top-right -->
+                  <path d="M156,72 Q162,38 152,28 Q150,50 144,68 Z" fill="#1e1e38"/>
+                  <!-- Hair highlight streak (matches theme) -->
+                  <path d="M136,38 Q139,28 140,24 Q141,28 142,40" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+                  <path d="M124,58 Q121,46 122,40" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="1.5" stroke-linecap="round" opacity="0.35"/>
+                  <!-- Side hair strands over forehead -->
+                  <path d="M112,108 Q106,95 110,80 Q116,94 118,106" fill="#1e1e38"/>
+                  <path d="M168,108 Q174,95 170,80 Q164,94 162,106" fill="#1e1e38"/>
+
+                  <!-- Eyebrows -->
+                  <path d="M112,108 Q120,103 130,106" fill="none" stroke="#0e0e22" stroke-width="2.5" stroke-linecap="round"/>
+                  <path d="M150,106 Q160,103 168,108" fill="none" stroke="#0e0e22" stroke-width="2.5" stroke-linecap="round"/>
+
+                  <!-- Eyes — the focal point -->
+                  <!-- Left eye socket -->
+                  <path d="M110,118 Q121,112 132,118 Q121,128 110,118 Z" fill="var(--char-primary,#ff6b35)" filter="url(#f-glow-eyes)"/>
+                  <ellipse cx="121" cy="118" rx="6" ry="5.5" fill="var(--char-eye,#ff8c50)"/>
+                  <ellipse cx="121" cy="117" rx="2.8" ry="2.8" fill="#050a12"/>
+                  <ellipse cx="122.5" cy="115.5" rx="1.2" ry="1.2" fill="rgba(255,255,255,0.85)"/>
+                  <!-- Right eye socket -->
+                  <path d="M148,118 Q159,112 170,118 Q159,128 148,118 Z" fill="var(--char-primary,#ff6b35)" filter="url(#f-glow-eyes)"/>
+                  <ellipse cx="159" cy="118" rx="6" ry="5.5" fill="var(--char-eye,#ff8c50)"/>
+                  <ellipse cx="159" cy="117" rx="2.8" ry="2.8" fill="#050a12"/>
+                  <ellipse cx="160.5" cy="115.5" rx="1.2" ry="1.2" fill="rgba(255,255,255,0.85)"/>
+
+                  <!-- Nose (subtle) -->
+                  <path d="M136,132 Q140,137 144,132" fill="none" stroke="#9a6035" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+                  <!-- Mouth — confident slight smirk -->
+                  <path d="M126,148 Q134,153 140,151 Q146,153 154,148" fill="none" stroke="#8a5530" stroke-width="1.5" stroke-linecap="round"/>
+                  <!-- Scar/mark (optional character detail) -->
+                  <path d="M165,110 L168,118" stroke="var(--char-primary,#ff6b35)" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+                </g>
+
+                <!-- LAYER 5: FX / particles (fastest) -->
+                <g class="char-layer" data-depth="18">
+                  <!-- Floating energy orbs -->
+                  <circle cx="58" cy="195" r="3" fill="var(--char-primary,#ff6b35)" opacity="0.7">
+                    <animate attributeName="cy" values="195;175;195" dur="3.2s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.7;0.2;0.7" dur="3.2s" repeatCount="indefinite"/>
+                  </circle>
+                  <circle cx="220" cy="210" r="2.5" fill="var(--char-secondary,#ffd700)" opacity="0.6">
+                    <animate attributeName="cy" values="210;185;210" dur="4.1s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.6;0.15;0.6" dur="4.1s" repeatCount="indefinite"/>
+                  </circle>
+                  <circle cx="65" cy="260" r="2" fill="var(--char-secondary,#ffd700)" opacity="0.5">
+                    <animate attributeName="cy" values="260;238;260" dur="3.8s" repeatCount="indefinite"/>
+                  </circle>
+                  <circle cx="215" cy="155" r="2" fill="var(--char-primary,#ff6b35)" opacity="0.45">
+                    <animate attributeName="cy" values="155;130;155" dur="2.9s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.45;0.1;0.45" dur="2.9s" repeatCount="indefinite"/>
+                  </circle>
+                  <circle cx="78" cy="145" r="1.5" fill="var(--char-primary,#ff6b35)" opacity="0.4">
+                    <animate attributeName="cy" values="145;125;145" dur="3.5s" repeatCount="indefinite"/>
+                  </circle>
+                  <circle cx="202" cy="290" r="1.5" fill="var(--char-secondary,#ffd700)" opacity="0.35">
+                    <animate attributeName="cy" values="290;268;290" dur="4.5s" repeatCount="indefinite"/>
+                  </circle>
+                  <!-- Energy arc from hand -->
+                  <path d="M82,258 Q72,245 68,230" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="1.5" stroke-linecap="round" opacity="0.4">
+                    <animate attributeName="opacity" values="0.4;0.1;0.4" dur="2s" repeatCount="indefinite"/>
+                  </path>
+                  <path d="M198,258 Q208,245 212,230" fill="none" stroke="var(--char-primary,#ff6b35)" stroke-width="1.5" stroke-linecap="round" opacity="0.4">
+                    <animate attributeName="opacity" values="0.1;0.4;0.1" dur="2s" repeatCount="indefinite"/>
+                  </path>
+                  <!-- Chest pulse ring -->
+                  <circle cx="140" cy="238" r="12" fill="none" stroke="var(--char-secondary,#ffd700)" stroke-width="1" opacity="0">
+                    <animate attributeName="r" values="12;28;12" dur="2.5s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.5;0;0.5" dur="2.5s" repeatCount="indefinite"/>
+                  </circle>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Bottom info strip -->
+            <div class="avatar-card-info">
+              <div class="avatar-card-name" id="card-char-name">觉醒者</div>
+              <div class="avatar-card-title" id="card-char-title">普通人</div>
+              <div class="avatar-card-expbar">
+                <div class="avatar-card-expfill" id="card-exp-fill" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customization -->
+        <div class="card">
+          <div class="card-title">外观定制</div>
+          <div class="custom-section">
+            <div class="custom-label">形象主题</div>
+            <div class="theme-options">
+              <div class="theme-dot active" data-theme="awakening"
+                style="background:linear-gradient(135deg,#ff6b35,#ffd700)"
+                onclick="setCharTheme('awakening',this)">
+                <span class="theme-name">暗夜觉醒</span>
+              </div>
+              <div class="theme-dot" data-theme="flame"
+                style="background:linear-gradient(135deg,#ff3b30,#ff9500)"
+                onclick="setCharTheme('flame',this)">
+                <span class="theme-name">烈焰斗士</span>
+              </div>
+              <div class="theme-dot" data-theme="abyss"
+                style="background:linear-gradient(135deg,#af52de,#4a9eff)"
+                onclick="setCharTheme('abyss',this)">
+                <span class="theme-name">深渊领主</span>
+              </div>
+              <div class="theme-dot" data-theme="glory"
+                style="background:linear-gradient(135deg,#4a9eff,#34c759)"
+                onclick="setCharTheme('glory',this)">
+                <span class="theme-name">荣光守护</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end char-page-left -->
+
+      <!-- RIGHT: Stats -->
+      <div class="char-page-right">
+
+        <!-- Info chips -->
+        <div class="card">
+          <div class="char-info-chips" id="char-info-chips">
+            <div class="info-chip"><span class="info-chip-val text-orange" id="chip-level">1</span><span class="info-chip-label">等级</span></div>
+            <div class="info-chip"><span class="info-chip-val text-yellow" id="chip-exp">0</span><span class="info-chip-label">总经验</span></div>
+            <div class="info-chip"><span class="info-chip-val text-orange" id="chip-streak">0</span><span class="info-chip-label">连击天</span></div>
+            <div class="info-chip"><span class="info-chip-val text-blue" id="chip-shields">0</span><span class="info-chip-label">护盾</span></div>
+          </div>
+        </div>
+
+        <!-- Attributes -->
+        <div class="card">
+          <div class="card-title">角色属性</div>
+          <div class="char-attr-row">
+            <span class="char-attr-icon">📚</span>
+            <span class="char-attr-label" style="color:#4a9eff">智慧</span>
+            <div class="char-attr-bar"><div class="char-attr-fill" id="cp-study" style="background:#4a9eff;width:0%"></div></div>
+            <span class="char-attr-score" id="cp-study-val" style="color:#4a9eff">0</span>
+          </div>
+          <div class="char-attr-row">
+            <span class="char-attr-icon">🏃</span>
+            <span class="char-attr-label" style="color:#ff6b35">体能</span>
+            <div class="char-attr-bar"><div class="char-attr-fill" id="cp-exercise" style="background:#ff6b35;width:0%"></div></div>
+            <span class="char-attr-score" id="cp-exercise-val" style="color:#ff6b35">0</span>
+          </div>
+          <div class="char-attr-row">
+            <span class="char-attr-icon">⚡</span>
+            <span class="char-attr-label" style="color:#ffd700">专注</span>
+            <div class="char-attr-bar"><div class="char-attr-fill" id="cp-focus" style="background:#ffd700;width:0%"></div></div>
+            <span class="char-attr-score" id="cp-focus-val" style="color:#ffd700">0</span>
+          </div>
+          <div class="char-attr-row">
+            <span class="char-attr-icon">✍️</span>
+            <span class="char-attr-label" style="color:#34c759">意志</span>
+            <div class="char-attr-bar"><div class="char-attr-fill" id="cp-reflection" style="background:#34c759;width:0%"></div></div>
+            <span class="char-attr-score" id="cp-reflection-val" style="color:#34c759">0</span>
+          </div>
+        </div>
+
+        <!-- EXP bar card -->
+        <div class="card">
+          <div class="card-title">升级进度</div>
+          <div class="level-row" style="margin-bottom:8px">
+            <span class="level-badge" id="cp-level-badge">Lv. 1</span>
+            <span class="exp-label" id="cp-exp-label">0 / 250 EXP</span>
+          </div>
+          <div class="exp-bar-wrap" style="height:10px">
+            <div class="exp-bar-fill" id="cp-exp-bar" style="width:0%"></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px" id="cp-title-label">称号：普通人</div>
+        </div>
+
+        <!-- Unlocked achievements badges -->
+        <div class="card">
+          <div class="card-title">已获荣耀</div>
+          <div class="char-badges" id="char-badges">
+            <span style="font-size:12px;color:var(--muted)">完成打卡后解锁成就</span>
+          </div>
+        </div>
+
+      </div><!-- end char-page-right -->
     </div>
 
     <!-- ╔══ ANALYTICS ══╗ -->
@@ -680,6 +1158,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (page === 'challenges')   loadChallenges();
     if (page === 'history')      loadHistory();
     if (page === 'settings')     loadSettings();
+    if (page === 'character')    loadCharacter();
   });
 });
 
@@ -1249,6 +1728,165 @@ function showToast(icon, title, desc, borderColor) {
   `;
   container.appendChild(toast);
   setTimeout(() => { toast.classList.add('fadeout'); setTimeout(() => toast.remove(), 400); }, 3000);
+}
+
+// ═══════════════════════════════════════════════
+//  CHARACTER PAGE
+// ═══════════════════════════════════════════════
+
+const CHAR_THEMES = {
+  awakening: { primary: '#ff6b35', secondary: '#ffd700', eye: '#ff8c50' },
+  flame:     { primary: '#ff3b30', secondary: '#ff9500', eye: '#ff6040' },
+  abyss:     { primary: '#af52de', secondary: '#4a9eff', eye: '#c570f0' },
+  glory:     { primary: '#4a9eff', secondary: '#34c759', eye: '#70c0ff' },
+};
+
+let _charTheme = localStorage.getItem('charTheme') || 'awakening';
+
+function applyCharTheme(name) {
+  const t = CHAR_THEMES[name] || CHAR_THEMES.awakening;
+  const card = document.getElementById('avatar-card');
+  if (!card) return;
+  card.style.setProperty('--char-primary', t.primary);
+  card.style.setProperty('--char-secondary', t.secondary);
+  card.style.setProperty('--char-eye', t.eye);
+  // Update card border glow
+  card.style.boxShadow = `0 20px 60px rgba(0,0,0,0.6), 0 0 30px ${t.primary}33`;
+  card.style.borderColor = `${t.primary}40`;
+}
+
+function setCharTheme(name, dotEl) {
+  _charTheme = name;
+  localStorage.setItem('charTheme', name);
+  document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
+  if (dotEl) dotEl.classList.add('active');
+  applyCharTheme(name);
+}
+
+function initCharCard3D() {
+  const card = document.getElementById('avatar-card');
+  const holo = document.getElementById('card-holo');
+  const shine = document.getElementById('card-shine');
+  const layers = document.querySelectorAll('.char-layer');
+  if (!card) return;
+
+  let isHovering = false;
+  let animId = null;
+  let currentRx = 0, currentRy = 0;
+  let targetRx = 0,  targetRy = 0;
+
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width  - 0.5;   // -0.5 → +0.5
+    const y = (e.clientY - rect.top)  / rect.height - 0.5;
+
+    targetRy =  x * 22;   // tilt horizontal
+    targetRx = -y * 18;   // tilt vertical
+
+    // Holographic gradient follows cursor
+    const hx = (e.clientX - rect.left) / rect.width  * 100;
+    const hy = (e.clientY - rect.top)  / rect.height * 100;
+    holo.style.background = `conic-gradient(from ${x*30+180}deg at ${hx}% ${hy}%,
+      rgba(255,107,53,0.2) 0deg,
+      rgba(255,215,0,0.2) 60deg,
+      rgba(74,158,255,0.15) 120deg,
+      rgba(175,82,222,0.15) 180deg,
+      rgba(52,199,89,0.12) 240deg,
+      rgba(255,107,53,0.2) 300deg,
+      rgba(255,215,0,0.2) 360deg)`;
+    shine.style.background = `radial-gradient(circle at ${hx}% ${hy}%, rgba(255,255,255,0.14) 0%, transparent 60%)`;
+
+    // Parallax layers
+    layers.forEach(layer => {
+      const depth = parseFloat(layer.dataset.depth || 0);
+      const tx = x * depth * 1.4;
+      const ty = y * depth * 1.4;
+      layer.style.transform = `translate(${tx}px, ${ty}px)`;
+    });
+  });
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function animateTilt() {
+    currentRx = lerp(currentRx, isHovering ? targetRx : 0, 0.1);
+    currentRy = lerp(currentRy, isHovering ? targetRy : 0, 0.1);
+    card.style.transform = `perspective(800px) rotateX(${currentRx}deg) rotateY(${currentRy}deg)`;
+    animId = requestAnimationFrame(animateTilt);
+  }
+
+  card.addEventListener('mouseenter', () => { isHovering = true; });
+  card.addEventListener('mouseleave', () => {
+    isHovering = false;
+    layers.forEach(l => l.style.transform = '');
+  });
+
+  animateTilt();
+}
+
+async function loadCharacter() {
+  const [user, analytics, achievements] = await Promise.all([
+    API.get('/api/user'),
+    API.get('/api/analytics'),
+    API.get('/api/achievements'),
+  ]);
+
+  // Apply theme
+  const savedDot = document.querySelector(`.theme-dot[data-theme="${_charTheme}"]`);
+  document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
+  if (savedDot) savedDot.classList.add('active');
+  applyCharTheme(_charTheme);
+
+  // Card top badge
+  document.getElementById('card-level-badge').textContent = 'Lv. ' + user.level;
+
+  // Card bottom info
+  document.getElementById('card-char-name').textContent = user.name;
+  document.getElementById('card-char-title').textContent = user.title;
+  document.getElementById('card-exp-fill').style.width = user.progress + '%';
+
+  // Chips
+  document.getElementById('chip-level').textContent   = user.level;
+  document.getElementById('chip-exp').textContent     = user.total_exp.toLocaleString();
+  document.getElementById('chip-streak').textContent  = user.global_streak;
+
+  // Need shields from /api/today — use analytics streak for simplicity, fetch today
+  const today = await API.get('/api/today');
+  document.getElementById('chip-shields').textContent = today.shields;
+
+  // Attributes
+  const cs = analytics.category_stats;
+  ['study','exercise','focus','reflection'].forEach(cat => {
+    const s = cs[cat]?.score ?? 0;
+    const fill = document.getElementById('cp-' + cat);
+    const val  = document.getElementById('cp-' + cat + '-val');
+    if (fill) fill.style.width = s + '%';
+    if (val)  val.textContent  = s;
+  });
+
+  // EXP progress card
+  document.getElementById('cp-level-badge').textContent = 'Lv. ' + user.level;
+  document.getElementById('cp-exp-label').textContent   = user.current_exp + ' / ' + user.exp_needed + ' EXP';
+  document.getElementById('cp-exp-bar').style.width     = user.progress + '%';
+  document.getElementById('cp-title-label').textContent = '称号：' + user.title;
+
+  // Achievement badges — show unlocked ones
+  const unlocked = achievements.filter(a => a.is_unlocked);
+  const badgesEl = document.getElementById('char-badges');
+  if (unlocked.length === 0) {
+    badgesEl.innerHTML = '<span style="font-size:12px;color:var(--muted)">完成打卡后解锁成就</span>';
+  } else {
+    // Show last 8 unlocked achievements
+    const show = unlocked.slice(0, 8);
+    badgesEl.innerHTML = show.map(a => `
+      <div class="char-badge">
+        <span class="char-badge-icon">${a.icon}</span>
+        <span class="char-badge-name">${a.name}</span>
+      </div>
+    `).join('');
+  }
+
+  // Init 3D card interaction
+  initCharCard3D();
 }
 
 // ═══════════════════════════════════════════════
