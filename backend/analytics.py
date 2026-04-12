@@ -55,12 +55,15 @@ def calculate_streak_for_habit(habit_id: int, logs: list, today: date) -> int:
     return s
 
 
-def calculate_global_streak(habits: list, logs: list, today: date) -> int:
+def calculate_global_streak(habits: list, logs: list, today: date, shield_dates=None) -> int:
     if not habits:
         return 0
     ids = {h["id"] for h in habits}
+    _shields = set(shield_dates) if shield_dates else set()
 
     def all_done(ds: str) -> bool:
+        if ds in _shields:
+            return True
         done = {l["habit_id"] for l in logs if l["date"] == ds and l["completed"]}
         return ids.issubset(done)
 
@@ -250,6 +253,71 @@ def generate_system_message(momentum: float, consistency: float, streak: int, le
 def detect_weak_habits(cat_stats: dict) -> list:
     sorted_cats = sorted(cat_stats.items(), key=lambda x: x[1]["score"])
     return [{"category": k, **v} for k, v in sorted_cats if v["score"] < 60][:2]
+
+
+# ── 热图 ─────────────────────────────────────────────────────────────────────
+
+def calculate_heatmap_data(logs: list, habits: list, today: date) -> list:
+    """
+    Return list of {date, level 0-4, done, total} for last 365 days, oldest first.
+    level 0=none, 1=≤25%, 2=≤50%, 3=<100%, 4=100%
+    """
+    ids = {h["id"] for h in habits}
+    total = len(ids)
+
+    done_by_date: Dict[str, int] = {}
+    for l in logs:
+        if l["completed"] and l["habit_id"] in ids:
+            done_by_date[l["date"]] = done_by_date.get(l["date"], 0) + 1
+
+    result = []
+    for i in range(364, -1, -1):
+        d = today - timedelta(days=i)
+        ds = str(d)
+        done = done_by_date.get(ds, 0)
+        if total == 0 or done == 0:
+            level = 0
+        elif done / total <= 0.25:
+            level = 1
+        elif done / total <= 0.5:
+            level = 2
+        elif done / total < 1.0:
+            level = 3
+        else:
+            level = 4
+        result.append({"date": ds, "level": level, "done": done, "total": total})
+
+    return result
+
+
+# ── 打卡时间分布 ──────────────────────────────────────────────────────────────
+
+def calculate_checkin_time_distribution(logs: list) -> Dict:
+    """
+    Analyse check-in hour distribution from completed_at field.
+    Returns hourly counts (0-23) and best 2-hour peak window.
+    """
+    hours = [0] * 24
+    for l in logs:
+        if l.get("completed") and l.get("completed_at"):
+            try:
+                hour = int(str(l["completed_at"])[11:13])
+                if 0 <= hour <= 23:
+                    hours[hour] += 1
+            except (IndexError, ValueError, TypeError):
+                pass
+
+    total = sum(hours)
+    if total == 0:
+        return {"hourly": hours, "total": 0, "peak_start": -1, "peak_end": -1}
+
+    best_start = max(range(23), key=lambda h: hours[h] + hours[h + 1])
+    return {
+        "hourly": hours,
+        "total": total,
+        "peak_start": best_start,
+        "peak_end": best_start + 2,
+    }
 
 
 # ── 累计统计（成就用）────────────────────────────────────────────────────────

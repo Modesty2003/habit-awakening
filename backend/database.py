@@ -145,5 +145,32 @@ def init_db():
             (name, desc, icon, cat, key),
         )
 
+    # ── 护盾系统迁移 ──────────────────────────────────────────────────────────
+    for col, default in [("shields", 0), ("last_shield_milestone", 0)]:
+        try:
+            cursor.execute(f"ALTER TABLE users ADD COLUMN {col} INTEGER DEFAULT {default}")
+            conn.commit()
+        except Exception:
+            pass
+
+    # ── 护盾天数 & 挑战模式表 ──────────────────────────────────────────────────
+    cursor.executescript("""
+        CREATE TABLE IF NOT EXISTS shield_days (
+            date TEXT PRIMARY KEY,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS challenges (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            habit_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            target_days INTEGER DEFAULT 21,
+            start_date TEXT NOT NULL,
+            status TEXT DEFAULT 'active',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (habit_id) REFERENCES habits(id)
+        );
+    """)
+
     conn.commit()
     conn.close()

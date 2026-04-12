@@ -26,6 +26,8 @@ from backend.analytics import (
     calculate_weekly_boss,
     generate_system_message,
     detect_weak_habits,
+    calculate_heatmap_data,
+    calculate_checkin_time_distribution,
 )
 from backend.achievements import check_and_unlock
 
@@ -57,12 +59,19 @@ class HabitUpdate(BaseModel):
     is_active: Optional[int] = None
 
 
+class ChallengeCreate(BaseModel):
+    habit_id: int
+    name: str
+    target_days: int = 21
+
+
 # ── 辅助 ─────────────────────────────────────────────────────────────────────
 
 def _fetch_all_logs(conn, days: int = 90):
     cutoff = str(date.today() - timedelta(days=days))
     rows = conn.execute(
-        "SELECT habit_id, date, completed, exp_earned, streak_count FROM habit_logs WHERE date >= ?",
+        """SELECT habit_id, date, completed, exp_earned, streak_count, completed_at
+           FROM habit_logs WHERE date >= ?""",
         (cutoff,),
     ).fetchall()
     return [dict(r) for r in rows]
@@ -76,8 +85,67 @@ def _fetch_habits(conn):
 
 
 def _fetch_user(conn):
-    row = conn.execute("SELECT id, name, total_exp FROM users WHERE id=1").fetchone()
+    row = conn.execute(
+        "SELECT id, name, total_exp, shields FROM users WHERE id=1"
+    ).fetchone()
     return dict(row)
+
+
+def _fetch_shield_dates(conn):
+    rows = conn.execute("SELECT date FROM shield_days").fetchall()
+    return {r["date"] for r in rows}
+
+
+def _maybe_use_shield(conn, habits, logs, today) -> bool:
+    """
+    If yesterday was a missed day but day-before-yesterday wasn't,
+    auto-spend one shield to protect the streak.
+    Only fires once per missed day.
+    """
+    if not habits:
+        return False
+
+    yesterday = str(today - timedelta(days=1))
+    day_before = str(today - timedelta(days=2))
+
+    # Already shielded today?
+    if conn.execute("SELECT date FROM shield_days WHERE date=?", (yesterday,)).fetchone():
+        return False
+
+    ids = {h["id"] for h in habits}
+
+    def all_done_in_logs(ds):
+        done = {l["habit_id"] for l in logs if l["date"] == ds and l["completed"]}
+        return ids.issubset(done)
+
+    if not all_done_in_logs(yesterday) and all_done_in_logs(day_before):
+        user = conn.execute("SELECT shields FROM users WHERE id=1").fetchone()
+        if user and user["shields"] > 0:
+            conn.execute("INSERT OR IGNORE INTO shield_days (date) VALUES (?)", (yesterday,))
+            conn.execute("UPDATE users SET shields = shields - 1 WHERE id=1")
+            conn.commit()
+            return True
+
+    return False
+
+
+def _maybe_earn_shield(conn, global_streak) -> bool:
+    """Award a shield each time streak hits a new multiple-of-7 milestone (max 3)."""
+    if global_streak <= 0 or global_streak % 7 != 0:
+        return False
+    user = conn.execute(
+        "SELECT shields, last_shield_milestone FROM users WHERE id=1"
+    ).fetchone()
+    if not user:
+        return False
+    if global_streak > user["last_shield_milestone"] and user["shields"] < 3:
+        conn.execute(
+            "UPDATE users SET shields=shields+1, last_shield_milestone=? WHERE id=1",
+            (global_streak,),
+        )
+        conn.commit()
+        return True
+    return False
 
 
 # ── API: 用户 ─────────────────────────────────────────────────────────────────
@@ -89,8 +157,9 @@ def get_user():
         user = _fetch_user(conn)
         habits = _fetch_habits(conn)
         logs = _fetch_all_logs(conn)
+        shield_dates = _fetch_shield_dates(conn)
         level_info = get_level_info(user["total_exp"])
-        global_streak = calculate_global_streak(habits, logs, date.today())
+        global_streak = calculate_global_streak(habits, logs, date.today(), shield_dates)
         return {**user, **level_info, "global_streak": global_streak}
     finally:
         conn.close()
@@ -168,8 +237,17 @@ def get_today():
     conn = get_db()
     try:
         today_str = str(date.today())
+        today = date.today()
         habits = _fetch_habits(conn)
         logs = _fetch_all_logs(conn)
+
+        # Auto-use shield if streak would break (first request of a new missed day)
+        shield_auto_used = _maybe_use_shield(conn, habits, logs, today)
+        if shield_auto_used:
+            logs = _fetch_all_logs(conn)  # refresh after shield insertion
+
+        shield_dates = _fetch_shield_dates(conn)
+        user = _fetch_user(conn)
 
         today_logs = {
             row["habit_id"]: dict(row)
@@ -182,7 +260,7 @@ def get_today():
         result = []
         for h in habits:
             log = today_logs.get(h["id"], {})
-            streak = calculate_streak_for_habit(h["id"], logs, date.today())
+            streak = calculate_streak_for_habit(h["id"], logs, today)
             dyn_exp = calculate_dynamic_exp(h["base_exp"], h["id"], logs)
             exp_preview = calculate_exp_with_streak(dyn_exp, streak)
             result.append({
@@ -191,9 +269,15 @@ def get_today():
                 "exp_earned": log.get("exp_earned", 0),
                 "streak": streak,
                 "exp_preview": exp_preview,
-                "dynamic_exp": dyn_exp,  # 动态难度调整后的基础值
+                "dynamic_exp": dyn_exp,
             })
-        return {"date": today_str, "habits": result}
+
+        return {
+            "date": today_str,
+            "habits": result,
+            "shields": user["shields"],
+            "shield_auto_used": shield_auto_used,
+        }
     finally:
         conn.close()
 
@@ -203,6 +287,7 @@ def toggle_checkin(habit_id: int):
     conn = get_db()
     try:
         today_str = str(date.today())
+        today = date.today()
         habits = _fetch_habits(conn)
         habit = next((h for h in habits if h["id"] == habit_id), None)
         if not habit:
@@ -215,6 +300,7 @@ def toggle_checkin(habit_id: int):
         ).fetchone()
 
         if existing and existing["completed"]:
+            # ── 取消打卡 ───────────────────────────────────────────────────────
             exp_row = conn.execute(
                 "SELECT exp_earned FROM habit_logs WHERE habit_id=? AND date=?",
                 (habit_id, today_str),
@@ -229,12 +315,25 @@ def toggle_checkin(habit_id: int):
                 (exp_to_remove,),
             )
             conn.commit()
-            return {"completed": False, "exp_earned": 0, "exp_delta": -exp_to_remove}
+            user = _fetch_user(conn)
+            return {
+                "completed": False,
+                "exp_earned": 0,
+                "exp_delta": -exp_to_remove,
+                "shields": user["shields"],
+            }
         else:
-            # 完成打卡：先算动态 EXP，再叠加连击加成
-            streak = calculate_streak_for_habit(habit_id, logs, date.today())
+            # ── 打卡 ──────────────────────────────────────────────────────────
+            # Try auto-use shield before calculating streak
+            shield_used = _maybe_use_shield(conn, habits, logs, today)
+            if shield_used:
+                logs = _fetch_all_logs(conn)
+
+            shield_dates = _fetch_shield_dates(conn)
+            streak = calculate_streak_for_habit(habit_id, logs, today)
             dyn_exp = calculate_dynamic_exp(habit["base_exp"], habit_id, logs)
             exp_earned = calculate_exp_with_streak(dyn_exp, streak)
+
             conn.execute(
                 """INSERT INTO habit_logs (habit_id, date, completed, exp_earned, streak_count, completed_at)
                    VALUES (?, ?, 1, ?, ?, datetime('now'))
@@ -248,18 +347,25 @@ def toggle_checkin(habit_id: int):
             )
             conn.commit()
 
-            # 成就检测
+            # Check if today all habits done → award shield if streak milestone hit
             logs_fresh = _fetch_all_logs(conn)
-            user = _fetch_user(conn)
             habits_fresh = _fetch_habits(conn)
+            user = _fetch_user(conn)
+            global_streak = calculate_global_streak(habits_fresh, logs_fresh, today, shield_dates)
+            shield_earned = _maybe_earn_shield(conn, global_streak)
+
             new_achievements = check_and_unlock(conn, logs_fresh, habits_fresh, user)
 
+            user = _fetch_user(conn)  # re-fetch after possible shield update
             return {
                 "completed": True,
                 "exp_earned": exp_earned,
                 "exp_delta": exp_earned,
                 "streak": streak + 1,
                 "new_achievements": new_achievements,
+                "shield_used": shield_used,
+                "shield_earned": shield_earned,
+                "shields": user["shields"],
             }
     finally:
         conn.close()
@@ -272,8 +378,9 @@ def get_analytics():
     conn = get_db()
     try:
         habits = _fetch_habits(conn)
-        logs = _fetch_all_logs(conn, days=90)
+        logs = _fetch_all_logs(conn, days=366)  # 365 days + buffer for heatmap
         user = _fetch_user(conn)
+        shield_dates = _fetch_shield_dates(conn)
 
         momentum = calculate_momentum(logs, habits, days=14)
         consistency = calculate_consistency(logs, habits, days=30)
@@ -282,8 +389,10 @@ def get_analytics():
         last_boss = calculate_weekly_boss(logs, habits, week_offset=1)
         weak = detect_weak_habits(cat_stats)
         level_info = get_level_info(user["total_exp"])
-        global_streak = calculate_global_streak(habits, logs, date.today())
+        global_streak = calculate_global_streak(habits, logs, date.today(), shield_dates)
         msg = generate_system_message(momentum, consistency, global_streak, level_info["level"])
+        heatmap = calculate_heatmap_data(logs, habits, date.today())
+        time_dist = calculate_checkin_time_distribution(logs)
 
         # 最近 30 天每日完成数（给折线图用）
         today = date.today()
@@ -307,6 +416,8 @@ def get_analytics():
             "system_message": msg,
             "daily_history": daily_history,
             "global_streak": global_streak,
+            "heatmap": heatmap,
+            "time_distribution": time_dist,
         }
     finally:
         conn.close()
@@ -345,6 +456,85 @@ def get_history(days: int = 60):
             (cutoff,),
         ).fetchall()
         return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+# ── API: 挑战模式 ─────────────────────────────────────────────────────────────
+
+@app.get("/api/challenges")
+def get_challenges():
+    conn = get_db()
+    try:
+        challenges = conn.execute(
+            "SELECT * FROM challenges WHERE status != 'abandoned' ORDER BY created_at DESC"
+        ).fetchall()
+        all_habits = {
+            h["id"]: dict(h)
+            for h in conn.execute("SELECT id, name, category, icon, base_exp, is_active FROM habits").fetchall()
+        }
+        logs = _fetch_all_logs(conn, days=366)
+        today = date.today()
+
+        result = []
+        for c in [dict(c) for c in challenges]:
+            habit = all_habits.get(c["habit_id"], {})
+            start = date.fromisoformat(c["start_date"])
+            end = start + timedelta(days=c["target_days"] - 1)
+
+            done_days = len({
+                l["date"] for l in logs
+                if l["habit_id"] == c["habit_id"]
+                and l["completed"]
+                and start <= date.fromisoformat(l["date"]) <= end
+            })
+
+            progress_pct = round(done_days / c["target_days"] * 100)
+
+            # Auto-update status
+            if done_days >= c["target_days"] and c["status"] == "active":
+                conn.execute("UPDATE challenges SET status='completed' WHERE id=?", (c["id"],))
+                conn.commit()
+                c["status"] = "completed"
+            elif today > end and c["status"] == "active":
+                conn.execute("UPDATE challenges SET status='failed' WHERE id=?", (c["id"],))
+                conn.commit()
+                c["status"] = "failed"
+
+            c["habit_name"] = habit.get("name", "[已删除]")
+            c["habit_icon"] = habit.get("icon", "❓")
+            c["days_done"] = done_days
+            c["days_remaining"] = max(0, (end - today).days)
+            c["progress_pct"] = progress_pct
+            c["end_date"] = str(end)
+            result.append(c)
+
+        return result
+    finally:
+        conn.close()
+
+
+@app.post("/api/challenges")
+def create_challenge(body: ChallengeCreate):
+    conn = get_db()
+    try:
+        conn.execute(
+            "INSERT INTO challenges (habit_id, name, target_days, start_date) VALUES (?, ?, ?, ?)",
+            (body.habit_id, body.name.strip(), body.target_days, str(date.today())),
+        )
+        conn.commit()
+        return {"ok": True}
+    finally:
+        conn.close()
+
+
+@app.delete("/api/challenges/{challenge_id}")
+def delete_challenge(challenge_id: int):
+    conn = get_db()
+    try:
+        conn.execute("UPDATE challenges SET status='abandoned' WHERE id=?", (challenge_id,))
+        conn.commit()
+        return {"ok": True}
     finally:
         conn.close()
 

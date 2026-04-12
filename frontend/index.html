@@ -32,834 +32,302 @@
   --glow-y:    rgba(255, 215, 0, 0.25);
 }
 
-html, body {
-  height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Noto Sans SC', system-ui, sans-serif;
-  font-size: 14px;
-  overflow: hidden;
-}
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Noto Sans SC', system-ui, sans-serif; font-size: 14px; overflow: hidden; }
 
 /* ═══════════════════════════════════════════════
    LAYOUT
 ═══════════════════════════════════════════════ */
-#app {
-  display: grid;
-  grid-template-columns: 220px 1fr;
-  grid-template-rows: 56px 1fr;
-  height: 100vh;
-}
+#app { display: grid; grid-template-columns: 220px 1fr; grid-template-rows: 56px 1fr; height: 100vh; }
 
-/* ── TOPBAR ─────────────────────────────────── */
-#topbar {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 20px;
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  z-index: 10;
-}
-
-#topbar .logo {
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  background: linear-gradient(135deg, var(--orange), var(--yellow));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  flex-shrink: 0;
-}
-
-#topbar .tagline {
-  font-size: 11px;
-  color: var(--muted);
-  letter-spacing: 1px;
-  flex-shrink: 0;
-}
-
-/* 名言跑马灯 */
-#quote-ticker {
-  flex: 1;
-  overflow: hidden;
-  text-align: center;
-  padding: 0 16px;
-}
-#quote-text {
-  font-size: 12px;
-  color: var(--yellow);
-  font-style: italic;
-  opacity: 0;
-  transition: opacity 0.6s ease;
-  letter-spacing: 0.3px;
-}
+/* TOPBAR */
+#topbar { grid-column: 1/-1; display: flex; align-items: center; gap: 12px; padding: 0 20px; background: var(--bg2); border-bottom: 1px solid var(--border); z-index: 10; }
+#topbar .logo { font-size: 18px; font-weight: 900; letter-spacing: 2px; background: linear-gradient(135deg, var(--orange), var(--yellow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; flex-shrink: 0; }
+#topbar .tagline { font-size: 11px; color: var(--muted); letter-spacing: 1px; flex-shrink: 0; }
+#quote-ticker { flex: 1; overflow: hidden; text-align: center; padding: 0 16px; }
+#quote-text { font-size: 12px; color: var(--yellow); font-style: italic; opacity: 0; transition: opacity 0.6s ease; letter-spacing: 0.3px; }
 #quote-text.visible { opacity: 1; }
+#topbar .date-chip { font-size: 12px; color: var(--muted); background: var(--bg3); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); flex-shrink: 0; }
 
-#topbar .date-chip {
-  font-size: 12px;
-  color: var(--muted);
-  background: var(--bg3);
-  padding: 4px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-/* ── SIDEBAR ────────────────────────────────── */
-#sidebar {
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  padding: 16px 0;
-  overflow-y: auto;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 20px;
-  cursor: pointer;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.2s;
-  border-left: 3px solid transparent;
-  letter-spacing: 0.5px;
-}
-
+/* SIDEBAR */
+#sidebar { background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 16px 0; overflow-y: auto; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 11px 20px; cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 500; transition: all 0.2s; border-left: 3px solid transparent; letter-spacing: 0.5px; }
 .nav-item:hover { color: var(--text); background: rgba(255,107,53,0.06); }
-.nav-item.active {
-  color: var(--orange);
-  border-left-color: var(--orange);
-  background: rgba(255,107,53,0.1);
-}
-
+.nav-item.active { color: var(--orange); border-left-color: var(--orange); background: rgba(255,107,53,0.1); }
 .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
 
-/* ── MAIN CONTENT ───────────────────────────── */
-#main {
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* ── PAGE ───────────────────────────────────── */
+/* MAIN */
+#main { overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
 .page { display: none; flex-direction: column; gap: 16px; }
 .page.active { display: flex; }
 
 /* ═══════════════════════════════════════════════
    CARDS
 ═══════════════════════════════════════════════ */
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px;
-}
-
-.card-title {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--muted);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: 14px;
-}
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+.card-title { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
 
 /* ═══════════════════════════════════════════════
-   DASHBOARD PAGE
+   DASHBOARD
 ═══════════════════════════════════════════════ */
-#page-dashboard .dashboard-grid {
-  display: grid;
-  grid-template-columns: 240px 1fr 220px;
-  gap: 16px;
-  align-items: start;
-}
-
-/* ── CHARACTER PANEL ───────────────────────── */
+#page-dashboard .dashboard-grid { display: grid; grid-template-columns: 240px 1fr 220px; gap: 16px; align-items: start; }
 .char-panel { display: flex; flex-direction: column; gap: 14px; }
-
-.char-avatar-wrap {
-  text-align: center;
-  padding: 20px 0 10px;
-}
-
-.char-avatar {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 10px;
-  background: linear-gradient(135deg, var(--orange), var(--yellow));
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36px;
-  box-shadow: 0 0 24px var(--glow);
-  position: relative;
-}
-
-.char-avatar::after {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 2px solid var(--orange);
-  opacity: 0.4;
-  animation: pulse-ring 2s ease-out infinite;
-}
-
-@keyframes pulse-ring {
-  0%   { transform: scale(1); opacity: 0.4; }
-  100% { transform: scale(1.25); opacity: 0; }
-}
-
+.char-avatar-wrap { text-align: center; padding: 20px 0 10px; }
+.char-avatar { width: 80px; height: 80px; margin: 0 auto 10px; background: linear-gradient(135deg, var(--orange), var(--yellow)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; box-shadow: 0 0 24px var(--glow); position: relative; }
+.char-avatar::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--orange); opacity: 0.4; animation: pulse-ring 2s ease-out infinite; }
+@keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.4; } 100% { transform: scale(1.25); opacity: 0; } }
 .char-name { font-size: 16px; font-weight: 900; text-align: center; letter-spacing: 1px; }
 .char-title { font-size: 11px; color: var(--yellow); text-align: center; letter-spacing: 2px; font-weight: 700; }
-
-.level-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.level-badge {
-  background: linear-gradient(135deg, var(--orange), var(--orange-d));
-  color: white;
-  font-size: 12px;
-  font-weight: 900;
-  padding: 2px 10px;
-  border-radius: 20px;
-  letter-spacing: 1px;
-}
-
+.level-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.level-badge { background: linear-gradient(135deg, var(--orange), var(--orange-d)); color: white; font-size: 12px; font-weight: 900; padding: 2px 10px; border-radius: 20px; letter-spacing: 1px; }
 .exp-label { font-size: 11px; color: var(--muted); }
-
-.exp-bar-wrap {
-  background: var(--bg3);
-  border-radius: 4px;
-  height: 8px;
-  overflow: hidden;
-  margin-bottom: 4px;
-}
-
-.exp-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--orange), var(--yellow));
-  border-radius: 4px;
-  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 0 8px var(--glow);
-}
-
-.exp-text { font-size: 11px; color: var(--muted); text-align: right; }
-
-/* 属性栏 */
-.stat-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 9px;
-}
-.stat-name {
-  font-size: 11px;
-  font-weight: 700;
-  width: 32px;
-  color: var(--muted);
-  letter-spacing: 1px;
-}
-.stat-bar-bg {
-  flex: 1;
-  background: var(--bg3);
-  border-radius: 3px;
-  height: 5px;
-  overflow: hidden;
-}
+.exp-bar-wrap { background: var(--bg3); border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 4px; }
+.exp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--orange), var(--yellow)); border-radius: 4px; transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 0 8px var(--glow); }
+.stat-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.stat-name { font-size: 11px; font-weight: 700; width: 32px; color: var(--muted); letter-spacing: 1px; }
+.stat-bar-bg { flex: 1; background: var(--bg3); border-radius: 3px; height: 5px; overflow: hidden; }
 .stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
 .stat-score { font-size: 11px; color: var(--muted); width: 28px; text-align: right; }
 
-/* 连击 */
-.streak-display {
-  text-align: center;
-  padding: 12px;
-  background: var(--bg3);
-  border-radius: 10px;
-  border: 1px solid var(--border);
-}
+/* 连击 + 护盾 */
+.streak-display { text-align: center; padding: 12px; background: var(--bg3); border-radius: 10px; border: 1px solid var(--border); }
 .streak-fire { font-size: 28px; }
 .streak-count { font-size: 28px; font-weight: 900; color: var(--orange); line-height: 1; }
 .streak-label { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 1px; }
+.shield-row { margin-top: 8px; font-size: 18px; letter-spacing: 3px; line-height: 1; }
+.shield-tip { font-size: 10px; color: var(--muted); margin-top: 3px; }
 
-/* ── MISSION BOARD ─────────────────────────── */
-.system-msg {
-  background: linear-gradient(135deg, rgba(0,255,127,0.06), rgba(0,200,255,0.04));
-  border: 1px solid rgba(0,255,127,0.2);
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 12px;
-  color: #7fffd4;
-  font-family: 'SF Mono', 'Consolas', monospace;
-  margin-bottom: 14px;
-  line-height: 1.6;
-  letter-spacing: 0.3px;
-}
-
-.board-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-
-.board-title {
-  font-size: 15px;
-  font-weight: 900;
-  letter-spacing: 3px;
-  color: var(--orange);
-}
-
-.completion-chip {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
-  background: var(--bg3);
-  padding: 3px 10px;
-  border-radius: 20px;
-}
-
+/* 任务面板 */
+.system-msg { background: linear-gradient(135deg, rgba(0,255,127,0.06), rgba(0,200,255,0.04)); border: 1px solid rgba(0,255,127,0.2); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #7fffd4; font-family: 'SF Mono','Consolas',monospace; margin-bottom: 14px; line-height: 1.6; letter-spacing: 0.3px; }
+.board-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.board-title { font-size: 15px; font-weight: 900; letter-spacing: 3px; color: var(--orange); }
+.completion-chip { font-size: 12px; font-weight: 700; color: var(--muted); background: var(--bg3); padding: 3px 10px; border-radius: 20px; }
 .habit-list { display: flex; flex-direction: column; gap: 10px; }
-
-.habit-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 13px 16px;
-  background: var(--bg3);
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  transition: all 0.25s;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-
-.habit-card::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 3px;
-  background: var(--orange);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
+.habit-card { display: flex; align-items: center; gap: 12px; padding: 13px 16px; background: var(--bg3); border-radius: 10px; border: 1px solid var(--border); transition: all 0.25s; cursor: pointer; position: relative; overflow: hidden; }
+.habit-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--orange); opacity: 0; transition: opacity 0.2s; }
 .habit-card:hover::before { opacity: 1; }
 .habit-card:hover { border-color: rgba(255,107,53,0.3); transform: translateX(2px); }
-
-.habit-card.done {
-  border-color: rgba(52,199,89,0.3);
-  background: rgba(52,199,89,0.05);
-}
+.habit-card.done { border-color: rgba(52,199,89,0.3); background: rgba(52,199,89,0.05); }
 .habit-card.done::before { background: var(--green); opacity: 1; }
-
 .habit-icon { font-size: 22px; width: 30px; text-align: center; }
-
 .habit-info { flex: 1; min-width: 0; }
 .habit-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
 .habit-meta { font-size: 11px; color: var(--muted); }
 .habit-streak { color: var(--orange); font-weight: 700; }
-
 .habit-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-
 .exp-badge-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-
-.exp-badge {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--yellow);
-  background: rgba(255,215,0,0.1);
-  padding: 3px 10px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,215,0,0.2);
-  white-space: nowrap;
-}
-
-/* 动态 EXP 调整标签 */
-.dyn-exp-tag {
-  font-size: 10px;
-  padding: 1px 6px;
-  border-radius: 10px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.dyn-exp-tag.up   { color: #34c759; background: rgba(52,199,89,0.12); }
+.exp-badge { font-size: 12px; font-weight: 700; color: var(--yellow); background: rgba(255,215,0,0.1); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.2); white-space: nowrap; }
+.dyn-exp-tag { font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 700; white-space: nowrap; }
+.dyn-exp-tag.up { color: #34c759; background: rgba(52,199,89,0.12); }
 .dyn-exp-tag.down { color: #ff9500; background: rgba(255,149,0,0.12); }
-
-.check-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-  background: transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  transition: all 0.2s;
-  color: var(--muted);
-}
-
+.check-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; color: var(--muted); }
 .check-btn:hover { border-color: var(--orange); color: var(--orange); transform: scale(1.1); }
 .check-btn.done { border-color: var(--green); background: var(--green); color: white; }
 
-/* EXP 浮动动画 */
-.exp-float {
-  position: fixed;
-  font-size: 16px;
-  font-weight: 900;
-  color: var(--yellow);
-  pointer-events: none;
-  animation: float-up 1.2s ease-out forwards;
-  z-index: 9999;
-  text-shadow: 0 0 10px var(--yellow);
-}
+/* EXP float */
+.exp-float { position: fixed; font-size: 16px; font-weight: 900; color: var(--yellow); pointer-events: none; animation: float-up 1.2s ease-out forwards; z-index: 9999; text-shadow: 0 0 10px var(--yellow); }
+@keyframes float-up { 0% { opacity: 1; transform: translateY(0) scale(1); } 50% { opacity: 1; transform: translateY(-40px) scale(1.2); } 100% { opacity: 0; transform: translateY(-80px) scale(0.8); } }
 
-@keyframes float-up {
-  0%   { opacity: 1; transform: translateY(0) scale(1); }
-  50%  { opacity: 1; transform: translateY(-40px) scale(1.2); }
-  100% { opacity: 0; transform: translateY(-80px) scale(0.8); }
-}
-
-/* ── RIGHT PANEL ───────────────────────────── */
+/* Right panel */
 .right-col { display: flex; flex-direction: column; gap: 14px; }
-
-/* 势头仪表盘 */
 .momentum-gauge { text-align: center; }
 .gauge-wrap { position: relative; width: 120px; height: 120px; margin: 8px auto; }
 .gauge-svg { width: 120px; height: 120px; transform: rotate(-90deg); }
 .gauge-bg { fill: none; stroke: var(--bg3); stroke-width: 10; }
-.gauge-fill {
-  fill: none;
-  stroke: url(#gaugeGrad);
-  stroke-width: 10;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 1s ease;
-}
-.gauge-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
+.gauge-fill { fill: none; stroke: url(#gaugeGrad); stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+.gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .gauge-val { font-size: 24px; font-weight: 900; color: var(--orange); line-height: 1; }
 .gauge-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
-
-/* BOSS 战 */
-.boss-card { cursor: default; }
 .boss-header { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
-.boss-icon { font-size: 18px; }
 .boss-name { font-size: 13px; font-weight: 900; color: var(--red); }
 .boss-desc { font-size: 11px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
-.boss-progress-bg {
-  background: var(--bg3);
-  border-radius: 4px;
-  height: 8px;
-  overflow: hidden;
-  margin-bottom: 6px;
-}
+.boss-progress-bg { background: var(--bg3); border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 6px; }
 .boss-progress-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
 .boss-rate { font-size: 11px; color: var(--muted); text-align: right; }
 .boss-win { color: var(--green); font-weight: 700; }
 .boss-fail { color: var(--red); }
 
 /* ═══════════════════════════════════════════════
-   ANALYTICS PAGE
+   ANALYTICS
 ═══════════════════════════════════════════════ */
-#page-analytics .analytics-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-#page-analytics .full-width { grid-column: 1 / -1; }
-
+#page-analytics .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+#page-analytics .full-width { grid-column: 1/-1; }
 .chart-wrap { position: relative; height: 200px; }
-.chart-wrap canvas { border-radius: 6px; }
-
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 14px;
-}
-.stat-card {
-  background: var(--bg3);
-  border-radius: 10px;
-  padding: 14px;
-  text-align: center;
-  border: 1px solid var(--border);
-}
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 14px; }
+.stat-card { background: var(--bg3); border-radius: 10px; padding: 14px; text-align: center; border: 1px solid var(--border); }
 .stat-card .val { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
 .stat-card .lbl { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
-
-/* 分类属性卡 */
 .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.cat-item {
-  background: var(--bg3);
-  border-radius: 10px;
-  padding: 14px;
-  border: 1px solid var(--border);
-}
+.cat-item { background: var(--bg3); border-radius: 10px; padding: 14px; border: 1px solid var(--border); }
 .cat-header { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
-.cat-icon { font-size: 16px; }
-.cat-name { font-size: 13px; font-weight: 700; }
 .cat-score-row { display: flex; align-items: center; gap: 8px; }
 .cat-bar-bg { flex: 1; background: var(--bg); border-radius: 3px; height: 6px; overflow: hidden; }
 .cat-bar-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
 .cat-pct { font-size: 12px; font-weight: 700; min-width: 32px; text-align: right; }
 
+/* 热图 */
+.heatmap-wrap { overflow-x: auto; padding-bottom: 8px; }
+.heatmap-months { display: flex; gap: 0; margin-bottom: 3px; width: max-content; }
+.heatmap-month-label { font-size: 10px; color: var(--muted); }
+.heatmap-grid { display: grid; grid-template-rows: repeat(7,13px); grid-auto-flow: column; grid-auto-columns: 13px; gap: 2px; width: max-content; }
+.hm-cell { width: 13px; height: 13px; border-radius: 2px; }
+.hm-0 { background: #252e3a; }
+.hm-1 { background: #6b2d10; }
+.hm-2 { background: #b84d1a; }
+.hm-3 { background: #e8762a; }
+.hm-4 { background: var(--yellow); }
+.heatmap-legend { display: flex; gap: 4px; align-items: center; margin-top: 6px; font-size: 11px; color: var(--muted); }
+
+/* 时间分布 */
+.time-peak { font-size: 13px; color: var(--yellow); font-weight: 700; margin-bottom: 10px; }
+
 /* ═══════════════════════════════════════════════
-   ACHIEVEMENTS PAGE
+   ACHIEVEMENTS
 ═══════════════════════════════════════════════ */
-/* 分类 Tab */
-.ach-tabs {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-.ach-tab {
-  padding: 5px 14px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  background: var(--bg3);
-  transition: all 0.2s;
-  letter-spacing: 0.5px;
-}
+.ach-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.ach-tab { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); color: var(--muted); background: var(--bg3); transition: all 0.2s; }
 .ach-tab:hover { color: var(--text); border-color: var(--orange); }
 .ach-tab.active { background: var(--orange); color: white; border-color: var(--orange); }
-
-.ach-summary {
-  font-size: 11px;
-  color: var(--muted);
-  margin-bottom: 14px;
-}
+.ach-summary { font-size: 11px; color: var(--muted); margin-bottom: 12px; }
 .ach-summary span { color: var(--yellow); font-weight: 700; }
-
-#page-achievements .ach-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
-}
-
-.ach-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px;
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  transition: all 0.25s;
-}
-
-.ach-card.unlocked {
-  border-color: rgba(255,215,0,0.3);
-  background: linear-gradient(135deg, rgba(255,215,0,0.05), rgba(255,107,53,0.05));
-}
-
+#page-achievements .ach-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap: 12px; }
+.ach-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; display: flex; align-items: flex-start; gap: 14px; transition: all 0.25s; }
+.ach-card.unlocked { border-color: rgba(255,215,0,0.3); background: linear-gradient(135deg,rgba(255,215,0,0.05),rgba(255,107,53,0.05)); }
 .ach-card.locked { opacity: 0.4; filter: grayscale(0.8); }
-
 .ach-icon { font-size: 32px; line-height: 1; flex-shrink: 0; }
-
 .ach-name { font-size: 13px; font-weight: 900; margin-bottom: 4px; }
 .ach-desc { font-size: 11px; color: var(--muted); line-height: 1.5; margin-bottom: 6px; }
 .ach-date { font-size: 10px; color: var(--yellow); font-weight: 700; }
 .ach-locked-lbl { font-size: 10px; color: var(--muted); }
 
 /* ═══════════════════════════════════════════════
+   CHALLENGES PAGE
+═══════════════════════════════════════════════ */
+.challenge-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 14px; }
+.challenge-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.challenge-card.completed { border-color: rgba(52,199,89,0.4); }
+.challenge-card.failed { border-color: rgba(255,59,48,0.3); opacity: 0.7; }
+.challenge-header { display: flex; align-items: center; gap: 10px; }
+.challenge-habit-icon { font-size: 24px; }
+.challenge-meta { flex: 1; }
+.challenge-name { font-size: 14px; font-weight: 900; margin-bottom: 2px; }
+.challenge-habit-name { font-size: 11px; color: var(--muted); }
+
+/* Circular ring */
+.ring-wrap { display: flex; align-items: center; gap: 14px; }
+.ring-svg-wrap { position: relative; width: 72px; height: 72px; flex-shrink: 0; }
+.ring-svg-wrap svg { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: var(--bg3); stroke-width: 7; }
+.ring-fill { fill: none; stroke: var(--orange); stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+.ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ring-val { font-size: 16px; font-weight: 900; color: var(--orange); line-height: 1; }
+.ring-pct { font-size: 10px; color: var(--muted); }
+.challenge-stats { flex: 1; }
+.challenge-stat-row { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.challenge-stat-row b { color: var(--text); }
+
+.challenge-footer { display: flex; align-items: center; justify-content: space-between; }
+.challenge-status-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+.badge-active { color: var(--orange); background: rgba(255,107,53,0.12); border: 1px solid rgba(255,107,53,0.3); }
+.badge-completed { color: var(--green); background: rgba(52,199,89,0.12); border: 1px solid rgba(52,199,89,0.3); }
+.badge-failed { color: var(--red); background: rgba(255,59,48,0.1); border: 1px solid rgba(255,59,48,0.25); }
+
+/* New challenge form */
+.challenge-form-card { background: var(--card); border: 1px solid var(--orange); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+.challenge-form-grid { display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 8px; align-items: end; }
+
+/* ═══════════════════════════════════════════════
    HISTORY PAGE
 ═══════════════════════════════════════════════ */
-.history-day {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.history-day-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  background: var(--bg3);
-  border-bottom: 1px solid var(--border);
-}
+.history-day { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.history-day-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: var(--bg3); border-bottom: 1px solid var(--border); }
 .history-day-date { font-size: 13px; font-weight: 700; color: var(--orange); }
 .history-day-count { font-size: 11px; color: var(--muted); }
-
-.history-log-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--border);
-}
+.history-log-row { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--border); }
 .history-log-row:last-child { border-bottom: none; }
-.history-log-icon { font-size: 18px; width: 24px; text-align: center; }
 .history-log-name { flex: 1; font-size: 13px; }
-.history-log-name .deleted-tag {
-  font-size: 10px;
-  color: var(--muted);
-  background: var(--bg3);
-  padding: 1px 6px;
-  border-radius: 6px;
-  margin-left: 6px;
-  border: 1px solid var(--border);
-}
+.deleted-tag { font-size: 10px; color: var(--muted); background: var(--bg3); padding: 1px 6px; border-radius: 6px; margin-left: 6px; border: 1px solid var(--border); }
 .history-log-exp { font-size: 12px; font-weight: 700; color: var(--yellow); }
-.history-log-streak { font-size: 11px; color: var(--muted); }
 
 /* ═══════════════════════════════════════════════
    SETTINGS PAGE
 ═══════════════════════════════════════════════ */
-#page-settings .settings-form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  max-width: 500px;
-}
-
-.form-group label {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.form-group input, .form-group select {
-  width: 100%;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 14px;
-  color: var(--text);
-  font-size: 14px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.form-group input:focus, .form-group select:focus {
-  border-color: var(--orange);
-}
-
-.btn {
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: inherit;
-  transition: all 0.2s;
-  letter-spacing: 0.5px;
-}
-
+#page-settings .settings-form { display: flex; flex-direction: column; gap: 18px; max-width: 500px; }
+.form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.form-group input, .form-group select { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.2s; }
+.form-group input:focus, .form-group select:focus { border-color: var(--orange); }
+.btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 700; font-family: inherit; transition: all 0.2s; letter-spacing: 0.5px; }
 .btn-primary { background: var(--orange); color: white; }
 .btn-primary:hover { background: var(--orange-d); transform: translateY(-1px); }
-
-.btn-ghost {
-  background: var(--bg3);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
+.btn-ghost { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
 .btn-ghost:hover { border-color: var(--orange); color: var(--orange); }
-
 .btn-danger { background: rgba(255,59,48,0.15); color: var(--red); border: 1px solid rgba(255,59,48,0.3); }
 .btn-danger:hover { background: rgba(255,59,48,0.25); }
-
-/* 习惯管理列表 */
+.btn-sm { padding: 5px 12px; font-size: 11px; }
 .habit-mgmt-list { display: flex; flex-direction: column; gap: 8px; }
-.habit-mgmt-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  background: var(--bg3);
-  border-radius: 8px;
-  border: 1px solid var(--border);
-}
-.habit-mgmt-icon { font-size: 18px; }
+.habit-mgmt-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg3); border-radius: 8px; border: 1px solid var(--border); }
 .habit-mgmt-name { flex: 1; font-size: 13px; font-weight: 500; }
-.habit-mgmt-cat {
-  font-size: 10px;
-  color: var(--muted);
-  background: var(--bg);
-  padding: 2px 8px;
-  border-radius: 10px;
-}
+.habit-mgmt-cat { font-size: 10px; color: var(--muted); background: var(--bg); padding: 2px 8px; border-radius: 10px; }
 
 /* Emoji picker */
-.emoji-btn {
-  width: 44px;
-  height: 42px;
-  font-size: 20px;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.2s;
-  flex-shrink: 0;
-}
+.emoji-btn { width: 44px; height: 42px; font-size: 20px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s; flex-shrink: 0; }
 .emoji-btn:hover { border-color: var(--orange); }
-
-.emoji-picker-popup {
-  position: absolute;
-  z-index: 200;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 10px;
-  display: grid;
-  grid-template-columns: repeat(7, 36px);
-  gap: 4px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-}
+.emoji-picker-popup { position: absolute; z-index: 200; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: grid; grid-template-columns: repeat(7,36px); gap: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
 .emoji-picker-popup.hidden { display: none; }
-.emoji-option {
-  width: 36px;
-  height: 36px;
-  font-size: 18px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  transition: background 0.15s;
-  border: none;
-  background: transparent;
-}
+.emoji-option { width: 36px; height: 36px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px; transition: background 0.15s; border: none; background: transparent; }
 .emoji-option:hover { background: var(--bg3); }
 
 /* ═══════════════════════════════════════════════
-   TOAST / ACHIEVEMENT POPUP
+   TOAST
 ═══════════════════════════════════════════════ */
-#toast-container {
-  position: fixed;
-  top: 70px;
-  right: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  z-index: 9999;
-  pointer-events: none;
-}
-
-.toast {
-  background: linear-gradient(135deg, #1a2535, #2a1a0a);
-  border: 1px solid var(--yellow);
-  border-radius: 12px;
-  padding: 14px 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 260px;
-  animation: slide-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 20px var(--glow-y);
-}
-
+#toast-container { position: fixed; top: 70px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 9999; pointer-events: none; }
+.toast { background: linear-gradient(135deg,#1a2535,#2a1a0a); border: 1px solid var(--yellow); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; min-width: 260px; animation: slide-in 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 20px var(--glow-y); }
 .toast.fadeout { animation: slide-out 0.35s ease-in forwards; }
-
-@keyframes slide-in {
-  from { opacity: 0; transform: translateX(80px) scale(0.8); }
-  to   { opacity: 1; transform: translateX(0) scale(1); }
-}
-@keyframes slide-out {
-  from { opacity: 1; transform: translateX(0); }
-  to   { opacity: 0; transform: translateX(80px); }
-}
-
+@keyframes slide-in { from { opacity:0; transform:translateX(80px) scale(0.8); } to { opacity:1; transform:translateX(0) scale(1); } }
+@keyframes slide-out { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(80px); } }
 .toast-icon { font-size: 24px; }
 .toast-title { font-size: 13px; font-weight: 900; color: var(--yellow); margin-bottom: 2px; }
 .toast-desc { font-size: 11px; color: var(--muted); }
 
 /* ═══════════════════════════════════════════════
-   SCROLLBAR
+   SCROLLBAR + UTILS
 ═══════════════════════════════════════════════ */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
-
-/* ═══════════════════════════════════════════════
-   UTILITY
-═══════════════════════════════════════════════ */
 .text-orange { color: var(--orange); }
 .text-yellow { color: var(--yellow); }
 .text-green  { color: var(--green); }
-.text-red    { color: var(--red); }
+.text-blue   { color: var(--blue); }
 .text-muted  { color: var(--muted); }
-.flex        { display: flex; }
-.flex-center { display: flex; align-items: center; justify-content: center; }
-.gap-8       { gap: 8px; }
-.mt-8        { margin-top: 8px; }
-.fw-900      { font-weight: 900; }
+.mt-8 { margin-top: 8px; }
 </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- ── TOPBAR ─────────────────────────────── -->
+  <!-- TOPBAR -->
   <div id="topbar">
     <span class="logo">⚡ 觉醒系统</span>
     <span class="tagline">AWAKENING SYSTEM</span>
-    <div id="quote-ticker">
-      <span id="quote-text"></span>
-    </div>
+    <div id="quote-ticker"><span id="quote-text"></span></div>
     <span class="date-chip" id="today-date"></span>
   </div>
 
-  <!-- ── SIDEBAR ────────────────────────────── -->
+  <!-- SIDEBAR -->
   <nav id="sidebar">
-    <div class="nav-item active" data-page="dashboard">
-      <span class="nav-icon">🏠</span> 主界面
-    </div>
-    <div class="nav-item" data-page="analytics">
-      <span class="nav-icon">📊</span> 战况报告
-    </div>
-    <div class="nav-item" data-page="achievements">
-      <span class="nav-icon">🏆</span> 成就殿堂
-    </div>
-    <div class="nav-item" data-page="history">
-      <span class="nav-icon">📋</span> 历史记录
-    </div>
-    <div class="nav-item" data-page="settings">
-      <span class="nav-icon">⚙️</span> 系统设置
-    </div>
+    <div class="nav-item active" data-page="dashboard"><span class="nav-icon">🏠</span> 主界面</div>
+    <div class="nav-item" data-page="analytics"><span class="nav-icon">📊</span> 战况报告</div>
+    <div class="nav-item" data-page="achievements"><span class="nav-icon">🏆</span> 成就殿堂</div>
+    <div class="nav-item" data-page="challenges"><span class="nav-icon">🎯</span> 挑战模式</div>
+    <div class="nav-item" data-page="history"><span class="nav-icon">📋</span> 历史记录</div>
+    <div class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span> 系统设置</div>
   </nav>
 
-  <!-- ── MAIN ───────────────────────────────── -->
+  <!-- MAIN -->
   <main id="main">
 
-    <!-- ╔══ DASHBOARD PAGE ══╗ -->
+    <!-- ╔══ DASHBOARD ══╗ -->
     <div id="page-dashboard" class="page active">
       <div class="dashboard-grid">
 
@@ -867,20 +335,16 @@ html, body {
         <div class="char-panel">
           <div class="card">
             <div class="char-avatar-wrap">
-              <div class="char-avatar" id="char-emoji">🦅</div>
+              <div class="char-avatar">🦅</div>
               <div class="char-name" id="char-name">觉醒者</div>
               <div class="char-title" id="char-title">普通人</div>
             </div>
-
             <div class="level-row">
               <span class="level-badge" id="char-level">Lv. 1</span>
               <span class="exp-label" id="exp-label">0 / 250 EXP</span>
             </div>
-            <div class="exp-bar-wrap">
-              <div class="exp-bar-fill" id="exp-bar" style="width:0%"></div>
-            </div>
-
-            <div class="stats-section mt-8">
+            <div class="exp-bar-wrap"><div class="exp-bar-fill" id="exp-bar" style="width:0%"></div></div>
+            <div class="mt-8">
               <div class="card-title">属性</div>
               <div class="stat-row">
                 <span class="stat-name" style="color:#4a9eff">智慧</span>
@@ -905,10 +369,13 @@ html, body {
             </div>
           </div>
 
+          <!-- 连击 + 护盾 -->
           <div class="card streak-display">
             <div class="streak-fire">🔥</div>
             <div class="streak-count" id="streak-count">0</div>
             <div class="streak-label">天全局连击</div>
+            <div class="shield-row" id="shield-row">⚫⚫⚫</div>
+            <div class="shield-tip">连击护盾（每7天+1）</div>
           </div>
         </div>
 
@@ -924,10 +391,8 @@ html, body {
           </div>
         </div>
 
-        <!-- 右侧面板 -->
+        <!-- 右侧 -->
         <div class="right-col">
-
-          <!-- 势头仪表盘 -->
           <div class="card momentum-gauge">
             <div class="card-title">势头指数</div>
             <div class="gauge-wrap">
@@ -938,11 +403,8 @@ html, body {
                     <stop offset="100%" style="stop-color:#ffd700"/>
                   </linearGradient>
                 </defs>
-                <circle class="gauge-bg" cx="60" cy="60" r="50"
-                  stroke-dasharray="314" stroke-dashoffset="0"/>
-                <circle class="gauge-fill" cx="60" cy="60" r="50"
-                  id="gauge-circle"
-                  stroke-dasharray="314" stroke-dashoffset="314"/>
+                <circle class="gauge-bg" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="0"/>
+                <circle class="gauge-fill" cx="60" cy="60" r="50" id="gauge-circle" stroke-dasharray="314" stroke-dashoffset="314"/>
               </svg>
               <div class="gauge-center">
                 <span class="gauge-val" id="gauge-val">0</span>
@@ -951,45 +413,30 @@ html, body {
             </div>
           </div>
 
-          <!-- BOSS 战 -->
-          <div class="card boss-card">
+          <div class="card">
             <div class="card-title">本周 BOSS 战</div>
             <div class="boss-header">
-              <span class="boss-icon">👹</span>
+              <span style="font-size:18px">👹</span>
               <span class="boss-name" id="boss-name">---</span>
             </div>
             <div class="boss-desc" id="boss-desc">---</div>
             <div class="boss-progress-bg">
               <div class="boss-progress-fill" id="boss-bar" style="width:0%"></div>
             </div>
-            <div class="boss-rate">
-              <span id="boss-rate-text">0%</span> / 目标 80%
-            </div>
+            <div class="boss-rate"><span id="boss-rate-text">0%</span> / 目标 80%</div>
           </div>
-
         </div>
+
       </div>
     </div>
 
-    <!-- ╔══ ANALYTICS PAGE ══╗ -->
+    <!-- ╔══ ANALYTICS ══╗ -->
     <div id="page-analytics" class="page">
       <div class="stats-row">
-        <div class="stat-card">
-          <div class="val text-orange" id="an-momentum">--</div>
-          <div class="lbl">势头指数</div>
-        </div>
-        <div class="stat-card">
-          <div class="val text-yellow" id="an-consistency">--</div>
-          <div class="lbl">30天坚持率</div>
-        </div>
-        <div class="stat-card">
-          <div class="val text-green" id="an-streak">--</div>
-          <div class="lbl">当前连击</div>
-        </div>
-        <div class="stat-card">
-          <div class="val text-blue" id="an-total-exp">--</div>
-          <div class="lbl">累计 EXP</div>
-        </div>
+        <div class="stat-card"><div class="val text-orange" id="an-momentum">--</div><div class="lbl">势头指数</div></div>
+        <div class="stat-card"><div class="val text-yellow" id="an-consistency">--</div><div class="lbl">30天坚持率</div></div>
+        <div class="stat-card"><div class="val text-green" id="an-streak">--</div><div class="lbl">当前连击</div></div>
+        <div class="stat-card"><div class="val text-blue" id="an-total-exp">--</div><div class="lbl">累计 EXP</div></div>
       </div>
 
       <div class="card full-width">
@@ -1002,10 +449,34 @@ html, body {
           <div class="card-title">最近 30 天完成趋势</div>
           <div class="chart-wrap"><canvas id="chart-history"></canvas></div>
         </div>
-
         <div class="card">
           <div class="card-title">属性雷达图</div>
           <div class="chart-wrap"><canvas id="chart-radar"></canvas></div>
+        </div>
+
+        <!-- 打卡时间段 -->
+        <div class="card full-width">
+          <div class="card-title">打卡时间段分析</div>
+          <div class="time-peak" id="time-peak-label">暂无数据</div>
+          <div class="chart-wrap" style="height:130px"><canvas id="chart-time"></canvas></div>
+        </div>
+
+        <!-- 热图 -->
+        <div class="card full-width">
+          <div class="card-title">打卡热图 · 过去一年</div>
+          <div class="heatmap-wrap">
+            <div class="heatmap-months" id="heatmap-months"></div>
+            <div class="heatmap-grid" id="heatmap-grid"></div>
+          </div>
+          <div class="heatmap-legend">
+            少
+            <div class="hm-cell hm-0"></div>
+            <div class="hm-cell hm-1"></div>
+            <div class="hm-cell hm-2"></div>
+            <div class="hm-cell hm-3"></div>
+            <div class="hm-cell hm-4"></div>
+            多（金色=全部完成）
+          </div>
         </div>
 
         <div class="card full-width">
@@ -1015,7 +486,7 @@ html, body {
       </div>
     </div>
 
-    <!-- ╔══ ACHIEVEMENTS PAGE ══╗ -->
+    <!-- ╔══ ACHIEVEMENTS ══╗ -->
     <div id="page-achievements" class="page">
       <div class="card">
         <div class="card-title">成就殿堂</div>
@@ -1029,15 +500,54 @@ html, body {
           <div class="ach-tab" data-cat="特殊">✨ 特殊</div>
         </div>
         <div class="ach-summary" id="ach-summary"></div>
-        <div class="ach-grid" id="ach-grid">
-          <div style="color:var(--muted);padding:20px">加载中...</div>
-        </div>
+        <div class="ach-grid" id="ach-grid"><div style="color:var(--muted);padding:20px">加载中...</div></div>
       </div>
     </div>
 
-    <!-- ╔══ HISTORY PAGE ══╗ -->
+    <!-- ╔══ CHALLENGES ══╗ -->
+    <div id="page-challenges" class="page">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:15px;font-weight:900;color:var(--orange);letter-spacing:2px">🎯 挑战模式</div>
+        <div style="font-size:12px;color:var(--muted)">为习惯设定专项挑战</div>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary btn-sm" onclick="toggleChallengeForm()">+ 新挑战</button>
+      </div>
+
+      <!-- 新建挑战表单 -->
+      <div class="challenge-form-card" id="challenge-form" style="display:none">
+        <div class="card-title">创建新挑战</div>
+        <div class="challenge-form-grid">
+          <div class="form-group" style="margin:0">
+            <label>选择习惯</label>
+            <select id="ch-habit-id"></select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>挑战名称</label>
+            <input type="text" id="ch-name" placeholder="21天读书挑战" maxlength="20"/>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>天数</label>
+            <select id="ch-days">
+              <option value="7">7天</option>
+              <option value="14">14天</option>
+              <option value="21" selected>21天</option>
+              <option value="30">30天</option>
+              <option value="66">66天</option>
+              <option value="100">100天</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="align-self:end" onclick="createChallenge()">确认</button>
+        </div>
+      </div>
+
+      <div class="challenge-grid" id="challenge-list">
+        <div style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1">加载中...</div>
+      </div>
+    </div>
+
+    <!-- ╔══ HISTORY ══╗ -->
     <div id="page-history" class="page">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+      <div style="display:flex;align-items:center;gap:12px">
         <div style="font-size:15px;font-weight:900;color:var(--orange);letter-spacing:2px">历史记录</div>
         <div style="font-size:12px;color:var(--muted)">含已删除习惯的打卡记录</div>
         <div style="flex:1"></div>
@@ -1047,35 +557,29 @@ html, body {
           <option value="90">最近 90 天</option>
         </select>
       </div>
-      <div id="history-list">
+      <div id="history-list" style="display:flex;flex-direction:column;gap:12px">
         <div style="color:var(--muted);text-align:center;padding:40px">加载中...</div>
       </div>
     </div>
 
-    <!-- ╔══ SETTINGS PAGE ══╗ -->
+    <!-- ╔══ SETTINGS ══╗ -->
     <div id="page-settings" class="page">
       <div class="card" style="max-width:500px">
         <div class="card-title">宿主信息</div>
         <div class="settings-form">
           <div class="form-group">
             <label>宿主名称</label>
-            <input type="text" id="set-name" placeholder="输入你的名字" maxlength="12" />
+            <input type="text" id="set-name" placeholder="输入你的名字" maxlength="12"/>
           </div>
           <button class="btn btn-primary" onclick="saveName()">保存名称</button>
         </div>
       </div>
-
       <div class="card">
         <div class="card-title">习惯管理</div>
         <div class="habit-mgmt-list" id="habit-mgmt-list" style="margin-bottom:16px"></div>
-
         <div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px;align-items:end;position:relative;">
-          <div class="form-group" style="margin:0">
-            <label>名称</label>
-            <input type="text" id="new-habit-name" placeholder="读书 30分钟" />
-          </div>
-          <div class="form-group" style="margin:0">
-            <label>类型</label>
+          <div class="form-group" style="margin:0"><label>名称</label><input type="text" id="new-habit-name" placeholder="读书 30分钟"/></div>
+          <div class="form-group" style="margin:0"><label>类型</label>
             <select id="new-habit-cat">
               <option value="study">📚 读书/学习</option>
               <option value="exercise">🏃 运动/健身</option>
@@ -1086,8 +590,7 @@ html, body {
           <div class="form-group" style="margin:0;position:relative">
             <label>图标</label>
             <button class="emoji-btn" id="emoji-btn" onclick="toggleEmojiPicker(event)">⚡</button>
-            <div class="emoji-picker-popup hidden" id="emoji-picker" style="position:absolute;bottom:50px;left:0">
-            </div>
+            <div class="emoji-picker-popup hidden" id="emoji-picker" style="position:absolute;bottom:50px;left:0"></div>
           </div>
           <button class="btn btn-primary" style="align-self:end" onclick="addHabit()">+ 添加</button>
         </div>
@@ -1097,12 +600,11 @@ html, body {
   </main>
 </div>
 
-<!-- ── TOAST CONTAINER ── -->
 <div id="toast-container"></div>
 
 <script>
 // ═══════════════════════════════════════════════
-//  QUOTES（热血动漫 + 自励）
+//  QUOTES
 // ═══════════════════════════════════════════════
 const QUOTES = [
   '「不管被打倒多少次，都要再站起来。」——《钻石王牌》',
@@ -1110,11 +612,9 @@ const QUOTES = [
   '「诶！今天也赢了！」——日向翔阳《排球少年》',
   '「最强的是团队，最弱的也是团队。」——《排球少年》',
   '「眼前每一球，都是最后一球的拼劲。」——《钻石王牌》',
-  '「一步都不能退。退一步就是死！」——《进击的巨人》',
-  '「不管结果如何，先行动！」——《火影忍者》',
   '「超越极限！Plus Ultra！」——《我的英雄学院》',
+  '「不管结果如何，先行动！」——《火影忍者》',
   '「用尽全力地燃烧吧！」——《排球少年》',
-  '「诶！还能继续！」——日向翔阳',
   '「所谓天才，就是不断努力的人。」',
   '「每天进步 1%，一年后强 37 倍。」——《原子习惯》',
   '「习惯是复利，今天的坚持是明天的利息。」',
@@ -1126,8 +626,7 @@ function cycleQuote() {
   const el = document.getElementById('quote-text');
   el.classList.remove('visible');
   setTimeout(() => {
-    el.textContent = QUOTES[quoteIdx % QUOTES.length];
-    quoteIdx++;
+    el.textContent = QUOTES[quoteIdx++ % QUOTES.length];
     el.classList.add('visible');
   }, 600);
 }
@@ -1137,47 +636,33 @@ setInterval(cycleQuote, 9000);
 // ═══════════════════════════════════════════════
 //  EMOJI PICKER
 // ═══════════════════════════════════════════════
-const EMOJIS = [
-  '📚','📖','✏️','🏋️','🏃','🧘','💧','🛌',
-  '🥗','🎯','⚡','🔥','💪','🧠','💻','🎵',
-  '🎨','✍️','📝','🌅','🚴','🏊','🤸','💊',
-  '🍎','🌿','📅','🎖️','🧩','🏆','🌙','☀️',
-  '🎋','🦁','🦅','🌊','⚔️','🛡️','🔮','🚀',
-];
-
+const EMOJIS = ['📚','📖','✏️','🏋️','🏃','🧘','💧','🛌','🥗','🎯','⚡','🔥','💪','🧠','💻','🎵','🎨','✍️','📝','🌅','🚴','🏊','🤸','💊','🍎','🌿','📅','🎖️','🧩','🏆','🌙','☀️','🎋','🦁','🦅','🌊','⚔️','🛡️','🔮','🚀'];
 let selectedEmoji = '⚡';
 
 function initEmojiPicker() {
-  const picker = document.getElementById('emoji-picker');
-  picker.innerHTML = EMOJIS.map(e =>
-    `<button class="emoji-option" onclick="selectEmoji('${e}')">${e}</button>`
-  ).join('');
+  document.getElementById('emoji-picker').innerHTML =
+    EMOJIS.map(e => `<button class="emoji-option" onclick="selectEmoji('${e}')">${e}</button>`).join('');
 }
-
 function selectEmoji(e) {
   selectedEmoji = e;
   document.getElementById('emoji-btn').textContent = e;
   document.getElementById('emoji-picker').classList.add('hidden');
 }
-
 function toggleEmojiPicker(evt) {
   evt.stopPropagation();
   document.getElementById('emoji-picker').classList.toggle('hidden');
 }
-
-document.addEventListener('click', () => {
-  document.getElementById('emoji-picker')?.classList.add('hidden');
-});
+document.addEventListener('click', () => document.getElementById('emoji-picker')?.classList.add('hidden'));
 
 // ═══════════════════════════════════════════════
 //  API
 // ═══════════════════════════════════════════════
 const API = {
-  get: url => fetch(url).then(r => r.json()),
-  post: (url, body) => fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) }).then(r => r.json()),
-  put: (url, body) => fetch(url, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) }).then(r => r.json()),
-  delete: url => fetch(url, { method: 'DELETE' }).then(r => r.json()),
-  patch: (url, body) => fetch(url, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) }).then(r => r.json()),
+  get:    url        => fetch(url).then(r => r.json()),
+  post:   (url,body) => fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()),
+  put:    (url,body) => fetch(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()),
+  delete: url        => fetch(url,{method:'DELETE'}).then(r=>r.json()),
+  patch:  (url,body) => fetch(url,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()),
 };
 
 // ═══════════════════════════════════════════════
@@ -1192,22 +677,30 @@ document.querySelectorAll('.nav-item').forEach(item => {
     document.getElementById('page-' + page).classList.add('active');
     if (page === 'analytics')    loadAnalytics();
     if (page === 'achievements') loadAchievements();
+    if (page === 'challenges')   loadChallenges();
     if (page === 'history')      loadHistory();
     if (page === 'settings')     loadSettings();
   });
 });
 
-// ═══════════════════════════════════════════════
-//  DATE
-// ═══════════════════════════════════════════════
 document.getElementById('today-date').textContent =
-  new Date().toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+  new Date().toLocaleDateString('zh-CN', {year:'numeric',month:'long',day:'numeric',weekday:'long'});
+
+// ═══════════════════════════════════════════════
+//  SHIELDS
+// ═══════════════════════════════════════════════
+function renderShields(n) {
+  const max = 3;
+  document.getElementById('shield-row').textContent =
+    '🛡️'.repeat(Math.min(n, max)) + '⚫'.repeat(Math.max(0, max - n));
+}
 
 // ═══════════════════════════════════════════════
 //  DASHBOARD
 // ═══════════════════════════════════════════════
 let radarChart = null;
 let histChart  = null;
+let timeChart  = null;
 
 async function loadDashboard() {
   const [user, today, analytics] = await Promise.all([
@@ -1216,13 +709,19 @@ async function loadDashboard() {
     API.get('/api/analytics'),
   ]);
 
-  // Character panel
+  // Shield auto-used notification (first load of a new missed day)
+  if (today.shield_auto_used) {
+    showToast('🛡️', '护盾自动激活！', '连击已保住，护盾 -1');
+  }
+
+  // Character
   document.getElementById('char-name').textContent = user.name;
   document.getElementById('char-title').textContent = user.title;
   document.getElementById('char-level').textContent = 'Lv. ' + user.level;
   document.getElementById('exp-label').textContent = user.current_exp + ' / ' + user.exp_needed + ' EXP';
   document.getElementById('exp-bar').style.width = user.progress + '%';
   document.getElementById('streak-count').textContent = user.global_streak;
+  renderShields(today.shields);
 
   // Cat stats
   const cs = analytics.category_stats;
@@ -1233,30 +732,26 @@ async function loadDashboard() {
     if (vl) vl.textContent = cs[cat].score;
   });
 
-  // System message
   document.getElementById('system-msg').textContent = analytics.system_message;
-
-  // Habit list
   renderHabitList(today.habits);
 
   // Momentum gauge
   const mom = analytics.momentum;
   document.getElementById('gauge-val').textContent = mom;
-  const offset = 314 - (mom / 100) * 314;
-  document.getElementById('gauge-circle').style.strokeDashoffset = offset;
+  document.getElementById('gauge-circle').style.strokeDashoffset = 314 - (mom / 100) * 314;
 
-  // Boss battle
+  // Boss
   const boss = analytics.weekly_boss;
   document.getElementById('boss-name').textContent = boss.boss_name;
   document.getElementById('boss-desc').textContent = boss.boss_desc;
-  const bossBar = document.getElementById('boss-bar');
-  bossBar.style.width = Math.min(boss.rate, 100) + '%';
-  bossBar.style.background = boss.rate >= 80
+  const bar = document.getElementById('boss-bar');
+  bar.style.width = Math.min(boss.rate, 100) + '%';
+  bar.style.background = boss.rate >= 80
     ? 'linear-gradient(90deg,#34c759,#00ff7f)'
     : 'linear-gradient(90deg,#ff3b30,#ff6b35)';
-  const rateText = document.getElementById('boss-rate-text');
-  rateText.textContent = boss.rate + '%';
-  rateText.className = boss.rate >= 80 ? 'boss-win' : 'boss-fail';
+  const rt = document.getElementById('boss-rate-text');
+  rt.textContent = boss.rate + '%';
+  rt.className = boss.rate >= 80 ? 'boss-win' : 'boss-fail';
 }
 
 function renderHabitList(habits) {
@@ -1270,34 +765,29 @@ function renderHabitList(habits) {
   }
 
   list.innerHTML = habits.map(h => {
-    // Dynamic EXP tag
     let dynTag = '';
     if (h.dynamic_exp && h.dynamic_exp !== h.base_exp) {
-      const diff = h.dynamic_exp - h.base_exp;
-      if (diff > 0) {
-        dynTag = `<span class="dyn-exp-tag up">↑ 难度加成</span>`;
-      } else {
-        dynTag = `<span class="dyn-exp-tag down">↓ 已熟练</span>`;
-      }
+      dynTag = h.dynamic_exp > h.base_exp
+        ? `<span class="dyn-exp-tag up">↑ 难度加成</span>`
+        : `<span class="dyn-exp-tag down">↓ 已熟练</span>`;
     }
-
     return `
-    <div class="habit-card ${h.completed ? 'done' : ''}" id="hcard-${h.id}" onclick="toggleHabit(${h.id}, this)">
-      <span class="habit-icon">${h.icon}</span>
-      <div class="habit-info">
-        <div class="habit-name">${h.name}</div>
-        <div class="habit-meta">
-          ${h.streak > 0 ? `<span class="habit-streak">🔥 ${h.streak} 连击</span>` : '今天还没打卡'}
+      <div class="habit-card ${h.completed ? 'done' : ''}" id="hcard-${h.id}" onclick="toggleHabit(${h.id}, this)">
+        <span class="habit-icon">${h.icon}</span>
+        <div class="habit-info">
+          <div class="habit-name">${h.name}</div>
+          <div class="habit-meta">
+            ${h.streak > 0 ? `<span class="habit-streak">🔥 ${h.streak} 连击</span>` : '今天还没打卡'}
+          </div>
+        </div>
+        <div class="habit-right">
+          <div class="exp-badge-wrap">
+            <span class="exp-badge">+${h.exp_preview} EXP</span>
+            ${dynTag}
+          </div>
+          <button class="check-btn ${h.completed ? 'done' : ''}">${h.completed ? '✓' : ''}</button>
         </div>
       </div>
-      <div class="habit-right">
-        <div class="exp-badge-wrap">
-          <span class="exp-badge">+${h.exp_preview} EXP</span>
-          ${dynTag}
-        </div>
-        <button class="check-btn ${h.completed ? 'done' : ''}">${h.completed ? '✓' : ''}</button>
-      </div>
-    </div>
     `;
   }).join('');
 }
@@ -1310,10 +800,18 @@ async function toggleHabit(habitId, cardEl) {
     showExpFloat('+' + result.exp_delta + ' EXP', rect.right - 80, rect.top + 10);
   }
 
-  if (result.new_achievements && result.new_achievements.length > 0) {
-    result.new_achievements.forEach(ach => showAchievementToast(ach));
+  if (result.shield_used) {
+    showToast('🛡️', '护盾自动激活！', '连击已保住，护盾 -1');
+  }
+  if (result.shield_earned) {
+    showToast('🛡️', '获得护盾！', '连击 ' + result.streak + ' 天里程碑奖励，护盾 +1');
   }
 
+  if (result.new_achievements?.length) {
+    result.new_achievements.forEach(a => showAchievementToast(a));
+  }
+
+  renderShields(result.shields ?? 0);
   await loadDashboard();
 }
 
@@ -1331,28 +829,16 @@ function showAchievementToast(ach) {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
   toast.className = 'toast';
-  toast.innerHTML = `
-    <span class="toast-icon">${ach.icon}</span>
-    <div class="toast-body">
-      <div class="toast-title">🎉 成就解锁！${ach.name}</div>
-      <div class="toast-desc">${ach.description}</div>
-    </div>
-  `;
+  toast.innerHTML = `<span class="toast-icon">${ach.icon}</span><div class="toast-body"><div class="toast-title">🎉 成就解锁！${ach.name}</div><div class="toast-desc">${ach.description}</div></div>`;
   container.appendChild(toast);
-  setTimeout(() => {
-    toast.classList.add('fadeout');
-    setTimeout(() => toast.remove(), 400);
-  }, 3500);
+  setTimeout(() => { toast.classList.add('fadeout'); setTimeout(() => toast.remove(), 400); }, 3500);
 }
 
 // ═══════════════════════════════════════════════
 //  ANALYTICS
 // ═══════════════════════════════════════════════
 async function loadAnalytics() {
-  const [analytics, user] = await Promise.all([
-    API.get('/api/analytics'),
-    API.get('/api/user'),
-  ]);
+  const [analytics, user] = await Promise.all([API.get('/api/analytics'), API.get('/api/user')]);
 
   document.getElementById('an-momentum').textContent = analytics.momentum;
   document.getElementById('an-consistency').textContent = analytics.consistency + '%';
@@ -1360,27 +846,24 @@ async function loadAnalytics() {
   document.getElementById('an-total-exp').textContent = user.total_exp;
   document.getElementById('an-system-msg').textContent = analytics.system_message;
 
+  // History bar chart
   const hist = analytics.daily_history;
-  const histLabels = hist.map(d => d.date.slice(5));
-  const histData = hist.map(d => d.total > 0 ? Math.round(d.done / d.total * 100) : 0);
-
   if (histChart) histChart.destroy();
   histChart = new Chart(document.getElementById('chart-history'), {
     type: 'bar',
     data: {
-      labels: histLabels,
+      labels: hist.map(d => d.date.slice(5)),
       datasets: [{
-        label: '完成率 %',
-        data: histData,
-        backgroundColor: histData.map(v =>
-          v >= 80 ? 'rgba(52,199,89,0.7)' : v >= 50 ? 'rgba(255,107,53,0.7)' : 'rgba(255,59,48,0.5)'
-        ),
+        data: hist.map(d => d.total > 0 ? Math.round(d.done / d.total * 100) : 0),
+        backgroundColor: hist.map(d => {
+          const v = d.total > 0 ? d.done / d.total * 100 : 0;
+          return v >= 80 ? 'rgba(52,199,89,0.7)' : v >= 50 ? 'rgba(255,107,53,0.7)' : 'rgba(255,59,48,0.5)';
+        }),
         borderRadius: 4,
       }],
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
         x: { grid: { color: '#2d3748' }, ticks: { color: '#8a9bb0', maxTicksLimit: 10 } },
@@ -1389,14 +872,14 @@ async function loadAnalytics() {
     },
   });
 
+  // Radar
   const cs = analytics.category_stats;
   if (radarChart) radarChart.destroy();
   radarChart = new Chart(document.getElementById('chart-radar'), {
     type: 'radar',
     data: {
-      labels: ['智慧', '体能', '专注', '意志'],
+      labels: ['智慧','体能','专注','意志'],
       datasets: [{
-        label: '属性',
         data: ['study','exercise','focus','reflection'].map(c => cs[c].score),
         backgroundColor: 'rgba(255,107,53,0.15)',
         borderColor: '#ff6b35',
@@ -1406,40 +889,120 @@ async function loadAnalytics() {
       }],
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { r: { min: 0, max: 100, grid: { color: '#2d3748' }, ticks: { display: false }, pointLabels: { color: '#f0f2f5', font: { size: 12, weight: 'bold' } }, angleLines: { color: '#2d3748' } } },
+    },
+  });
+
+  // Time distribution
+  const td = analytics.time_distribution;
+  const peakLbl = document.getElementById('time-peak-label');
+  if (td.total > 0) {
+    peakLbl.textContent = `⏰ 你的黄金时段：${td.peak_start}:00 — ${td.peak_end}:00（共 ${td.total} 次打卡记录）`;
+  } else {
+    peakLbl.textContent = '暂无打卡时间记录，开始打卡后这里会显示你的黄金时段';
+  }
+  if (timeChart) timeChart.destroy();
+  timeChart = new Chart(document.getElementById('chart-time'), {
+    type: 'bar',
+    data: {
+      labels: Array.from({length:24}, (_,i) => i + '时'),
+      datasets: [{
+        data: td.hourly,
+        backgroundColor: td.hourly.map((_,i) =>
+          td.total > 0 && i >= td.peak_start && i < td.peak_end
+            ? 'rgba(255,215,0,0.85)'
+            : 'rgba(255,107,53,0.45)'
+        ),
+        borderRadius: 3,
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        r: {
-          min: 0, max: 100,
-          grid: { color: '#2d3748' },
-          ticks: { display: false },
-          pointLabels: { color: '#f0f2f5', font: { size: 12, weight: 'bold' } },
-          angleLines: { color: '#2d3748' },
-        },
+        x: { grid: { color: '#2d3748' }, ticks: { color: '#8a9bb0', font: { size: 10 } } },
+        y: { grid: { color: '#2d3748' }, ticks: { color: '#8a9bb0', precision: 0 } },
       },
     },
   });
 
+  // Heatmap
+  renderHeatmap(analytics.heatmap);
+
+  // Cat detail
   document.getElementById('cat-grid').innerHTML =
     ['study','exercise','focus','reflection'].map(cat => {
       const c = cs[cat];
       return `
         <div class="cat-item">
           <div class="cat-header">
-            <span class="cat-icon">${c.icon}</span>
-            <span class="cat-name" style="color:${c.color}">${c.name}</span>
+            <span style="font-size:16px">${c.icon}</span>
+            <span style="font-size:13px;font-weight:700;color:${c.color}">${c.name}</span>
           </div>
           <div class="cat-score-row">
-            <div class="cat-bar-bg">
-              <div class="cat-bar-fill" style="width:${c.score}%;background:${c.color}"></div>
-            </div>
+            <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:${c.score}%;background:${c.color}"></div></div>
             <span class="cat-pct" style="color:${c.color}">${c.score}%</span>
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:6px">30天完成 ${c.done} 次</div>
         </div>
       `;
     }).join('');
+}
+
+function renderHeatmap(data) {
+  // data: array of {date, level, done, total}, oldest first (365 items)
+  const COLORS = ['#252e3a','#6b2d10','#b84d1a','#e8762a','#ffd700'];
+  const grid = document.getElementById('heatmap-grid');
+  const monthsEl = document.getElementById('heatmap-months');
+  grid.innerHTML = '';
+  monthsEl.innerHTML = '';
+
+  if (!data || !data.length) return;
+
+  // Find day-of-week for first date (Mon=0)
+  const firstDate = new Date(data[0].date + 'T00:00:00');
+  const startDow = (firstDate.getDay() + 6) % 7; // Mon=0
+
+  // Add empty padding cells
+  for (let i = 0; i < startDow; i++) {
+    const el = document.createElement('div');
+    el.style.cssText = 'width:13px;height:13px;background:transparent';
+    grid.appendChild(el);
+  }
+
+  // Track month labels (col index → month label)
+  const monthLabelCols = {};
+  let lastMonth = '';
+  let lastLabelCol = -99;
+
+  data.forEach((cell, i) => {
+    const el = document.createElement('div');
+    el.className = 'hm-cell hm-' + cell.level;
+    const doneStr = cell.total > 0 ? `${cell.done}/${cell.total}` : '无记录';
+    el.title = `${cell.date}  ${doneStr}`;
+    grid.appendChild(el);
+
+    const month = cell.date.slice(5, 7);
+    const col = Math.floor((startDow + i) / 7);
+    if (month !== lastMonth && col > lastLabelCol + 2) {
+      monthLabelCols[col] = parseInt(month) + '月';
+      lastMonth = month;
+      lastLabelCol = col;
+    }
+  });
+
+  // Total cols
+  const totalCols = Math.ceil((startDow + data.length) / 7);
+
+  // Render month labels row
+  for (let col = 0; col < totalCols; col++) {
+    const el = document.createElement('div');
+    el.style.cssText = 'width:15px;flex-shrink:0;font-size:10px;color:var(--muted)';
+    el.textContent = monthLabelCols[col] || '';
+    monthsEl.appendChild(el);
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -1463,29 +1026,127 @@ async function loadAchievements() {
 }
 
 function renderAchievements() {
-  const filtered = currentAchCat === '全部'
-    ? allAchs
-    : allAchs.filter(a => a.cat === currentAchCat);
-
+  const filtered = currentAchCat === '全部' ? allAchs : allAchs.filter(a => a.cat === currentAchCat);
   const unlocked = filtered.filter(a => a.is_unlocked).length;
   document.getElementById('ach-summary').innerHTML =
     `共 <span>${filtered.length}</span> 个成就 · 已解锁 <span>${unlocked}</span> 个`;
-
-  // Sort: unlocked first, then locked
-  const sorted = [...filtered].sort((a, b) => b.is_unlocked - a.is_unlocked);
-
+  const sorted = [...filtered].sort((a,b) => b.is_unlocked - a.is_unlocked);
   document.getElementById('ach-grid').innerHTML = sorted.map(a => `
     <div class="ach-card ${a.is_unlocked ? 'unlocked' : 'locked'}">
       <span class="ach-icon">${a.icon}</span>
-      <div class="ach-body">
+      <div>
         <div class="ach-name">${a.name}</div>
         <div class="ach-desc">${a.description}</div>
-        ${a.is_unlocked
-          ? `<div class="ach-date">✓ ${a.unlocked_at} 解锁</div>`
-          : `<div class="ach-locked-lbl">🔒 未解锁</div>`}
+        ${a.is_unlocked ? `<div class="ach-date">✓ ${a.unlocked_at} 解锁</div>` : `<div class="ach-locked-lbl">🔒 未解锁</div>`}
       </div>
     </div>
   `).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  CHALLENGES
+// ═══════════════════════════════════════════════
+let allHabitsForChallenge = [];
+
+function toggleChallengeForm() {
+  const f = document.getElementById('challenge-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+async function loadChallenges() {
+  const [challenges, habits] = await Promise.all([
+    API.get('/api/challenges'),
+    API.get('/api/habits'),
+  ]);
+  allHabitsForChallenge = habits;
+
+  // Populate habit select
+  const sel = document.getElementById('ch-habit-id');
+  sel.innerHTML = habits.length
+    ? habits.map(h => `<option value="${h.id}">${h.icon} ${h.name}</option>`).join('')
+    : '<option value="">（暂无习惯）</option>';
+
+  renderChallenges(challenges);
+}
+
+function renderChallenges(challenges) {
+  const list = document.getElementById('challenge-list');
+  if (!challenges.length) {
+    list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1">还没有挑战，点击「新挑战」开始！</div>';
+    return;
+  }
+
+  const CIRC = 2 * Math.PI * 29; // r=29, circumference≈182.2
+
+  list.innerHTML = challenges.map(c => {
+    const pct = c.progress_pct;
+    const offset = CIRC * (1 - pct / 100);
+    const statusClass = c.status === 'completed' ? 'badge-completed' : c.status === 'failed' ? 'badge-failed' : 'badge-active';
+    const statusText = c.status === 'completed' ? '✅ 已完成' : c.status === 'failed' ? '❌ 已结束' : '⚔️ 进行中';
+    const strokeColor = c.status === 'completed' ? '#34c759' : c.status === 'failed' ? '#8a9bb0' : '#ff6b35';
+    const cardClass = c.status === 'completed' ? 'completed' : c.status === 'failed' ? 'failed' : '';
+
+    return `
+      <div class="challenge-card ${cardClass}">
+        <div class="challenge-header">
+          <span class="challenge-habit-icon">${c.habit_icon}</span>
+          <div class="challenge-meta">
+            <div class="challenge-name">${c.name}</div>
+            <div class="challenge-habit-name">${c.habit_name}</div>
+          </div>
+        </div>
+
+        <div class="ring-wrap">
+          <div class="ring-svg-wrap">
+            <svg width="72" height="72" viewBox="0 0 72 72">
+              <circle class="ring-bg" cx="36" cy="36" r="29"/>
+              <circle cx="36" cy="36" r="29" fill="none"
+                stroke="${strokeColor}" stroke-width="7" stroke-linecap="round"
+                stroke-dasharray="${CIRC.toFixed(1)}"
+                stroke-dashoffset="${offset.toFixed(1)}"
+                style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 1s ease"/>
+            </svg>
+            <div class="ring-center">
+              <div class="ring-val" style="color:${strokeColor}">${pct}</div>
+              <div class="ring-pct">%</div>
+            </div>
+          </div>
+          <div class="challenge-stats">
+            <div class="challenge-stat-row">已打卡 <b>${c.days_done}</b> / ${c.target_days} 天</div>
+            ${c.status === 'active' ? `<div class="challenge-stat-row">剩余 <b>${c.days_remaining}</b> 天</div>` : ''}
+            <div class="challenge-stat-row">开始 <b>${c.start_date}</b></div>
+            <div class="challenge-stat-row">结束 <b>${c.end_date}</b></div>
+          </div>
+        </div>
+
+        <div class="challenge-footer">
+          <span class="challenge-status-badge ${statusClass}">${statusText}</span>
+          ${c.status === 'active'
+            ? `<button class="btn btn-danger btn-sm" onclick="abandonChallenge(${c.id})">放弃</button>`
+            : `<button class="btn btn-ghost btn-sm" onclick="abandonChallenge(${c.id})">移除</button>`
+          }
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function createChallenge() {
+  const habitId = parseInt(document.getElementById('ch-habit-id').value);
+  const name = document.getElementById('ch-name').value.trim();
+  const days = parseInt(document.getElementById('ch-days').value);
+  if (!name) { showToast('⚠️', '请输入挑战名称', ''); return; }
+  if (!habitId) { showToast('⚠️', '请先添加习惯', ''); return; }
+  await API.post('/api/challenges', { habit_id: habitId, name, target_days: days });
+  document.getElementById('ch-name').value = '';
+  document.getElementById('challenge-form').style.display = 'none';
+  showToast('🎯', '挑战已创建！', name + ' · ' + days + '天');
+  await loadChallenges();
+}
+
+async function abandonChallenge(id) {
+  await API.delete('/api/challenges/' + id);
+  await loadChallenges();
 }
 
 // ═══════════════════════════════════════════════
@@ -1494,52 +1155,37 @@ function renderAchievements() {
 async function loadHistory() {
   const days = document.getElementById('history-days')?.value || 60;
   const logs = await API.get('/api/history?days=' + days);
+  const container = document.getElementById('history-list');
 
   if (!logs.length) {
-    document.getElementById('history-list').innerHTML =
-      '<div style="color:var(--muted);text-align:center;padding:40px">暂无记录</div>';
+    container.innerHTML = '<div style="color:var(--muted);text-align:center;padding:40px">暂无记录</div>';
     return;
   }
 
-  // Group by date
   const byDate = {};
-  logs.forEach(l => {
-    if (!byDate[l.date]) byDate[l.date] = [];
-    byDate[l.date].push(l);
-  });
+  logs.forEach(l => { if (!byDate[l.date]) byDate[l.date] = []; byDate[l.date].push(l); });
+  const dates = Object.keys(byDate).sort((a,b) => b.localeCompare(a));
 
-  const dates = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
-
-  document.getElementById('history-list').innerHTML = dates.map(date => {
-    const dayLogs = byDate[date];
-    const doneCnt = dayLogs.filter(l => l.completed).length;
-    const rows = dayLogs
-      .filter(l => l.completed)
-      .map(l => {
-        const deletedTag = l.is_deleted
-          ? `<span class="deleted-tag">已删除</span>`
-          : '';
-        const streakTxt = l.streak_count > 1
-          ? `<span style="color:var(--orange);font-size:10px;margin-left:8px">🔥 ${l.streak_count}连</span>`
-          : '';
-        return `
-          <div class="history-log-row">
-            <span class="history-log-icon">${l.icon}</span>
-            <div class="history-log-name">${l.name}${deletedTag}${streakTxt}</div>
-            <span class="history-log-exp">+${l.exp_earned} EXP</span>
-          </div>
-        `;
-      }).join('');
-
-    if (!rows) return '';
-
+  container.innerHTML = dates.map(date => {
+    const dayLogs = byDate[date].filter(l => l.completed);
+    if (!dayLogs.length) return '';
     return `
       <div class="history-day">
         <div class="history-day-header">
           <span class="history-day-date">${date}</span>
-          <span class="history-day-count">完成 ${doneCnt} 项</span>
+          <span class="history-day-count">完成 ${dayLogs.length} 项</span>
         </div>
-        ${rows}
+        ${dayLogs.map(l => `
+          <div class="history-log-row">
+            <span style="font-size:18px;width:24px;text-align:center">${l.icon}</span>
+            <div class="history-log-name">
+              ${l.name}
+              ${l.is_deleted ? '<span class="deleted-tag">已删除</span>' : ''}
+              ${l.streak_count > 1 ? `<span style="color:var(--orange);font-size:10px;margin-left:8px">🔥${l.streak_count}连</span>` : ''}
+            </div>
+            <span class="history-log-exp">+${l.exp_earned} EXP</span>
+          </div>
+        `).join('')}
       </div>
     `;
   }).filter(Boolean).join('');
@@ -1549,21 +1195,16 @@ async function loadHistory() {
 //  SETTINGS
 // ═══════════════════════════════════════════════
 async function loadSettings() {
-  const [user, habits] = await Promise.all([
-    API.get('/api/user'),
-    API.get('/api/habits'),
-  ]);
-
+  const [user, habits] = await Promise.all([API.get('/api/user'), API.get('/api/habits')]);
   document.getElementById('set-name').value = user.name;
-
-  const catLabels = { study:'📚 学习', exercise:'🏃 运动', focus:'⚡ 专注', reflection:'✍️ 反思' };
+  const catLabels = {study:'📚 学习',exercise:'🏃 运动',focus:'⚡ 专注',reflection:'✍️ 反思'};
   document.getElementById('habit-mgmt-list').innerHTML = habits.map(h => `
     <div class="habit-mgmt-row">
-      <span class="habit-mgmt-icon">${h.icon}</span>
+      <span style="font-size:18px">${h.icon}</span>
       <span class="habit-mgmt-name">${h.name}</span>
       <span class="habit-mgmt-cat">${catLabels[h.category] || h.category}</span>
       <span style="font-size:11px;color:var(--muted)">基础 ${h.base_exp} EXP</span>
-      <button class="btn btn-danger" style="padding:4px 12px;font-size:11px" onclick="removeHabit(${h.id})">删除</button>
+      <button class="btn btn-danger btn-sm" onclick="removeHabit(${h.id})">删除</button>
     </div>
   `).join('');
 }
@@ -1579,10 +1220,8 @@ async function saveName() {
 async function addHabit() {
   const name = document.getElementById('new-habit-name').value.trim();
   const cat  = document.getElementById('new-habit-cat').value;
-  const icon = selectedEmoji || '⚡';
   if (!name) { showToast('⚠️', '请输入习惯名称', ''); return; }
-
-  await API.post('/api/habits', { name, category: cat, icon, base_exp: 100 });
+  await API.post('/api/habits', { name, category: cat, icon: selectedEmoji || '⚡', base_exp: 100 });
   document.getElementById('new-habit-name').value = '';
   selectedEmoji = '⚡';
   document.getElementById('emoji-btn').textContent = '⚡';
@@ -1596,20 +1235,20 @@ async function removeHabit(id) {
   await loadSettings();
 }
 
-function showToast(icon, title, desc) {
+function showToast(icon, title, desc, borderColor) {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
   toast.className = 'toast';
-  toast.style.borderColor = 'var(--border)';
+  if (borderColor) toast.style.borderColor = borderColor;
   toast.innerHTML = `
     <span class="toast-icon">${icon}</span>
     <div class="toast-body">
-      <div class="toast-title" style="color:var(--text)">${title}</div>
+      <div class="toast-title" style="${borderColor ? 'color:var(--text)' : ''}">${title}</div>
       ${desc ? `<div class="toast-desc">${desc}</div>` : ''}
     </div>
   `;
   container.appendChild(toast);
-  setTimeout(() => { toast.classList.add('fadeout'); setTimeout(() => toast.remove(), 400); }, 2500);
+  setTimeout(() => { toast.classList.add('fadeout'); setTimeout(() => toast.remove(), 400); }, 3000);
 }
 
 // ═══════════════════════════════════════════════
