@@ -302,14 +302,167 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 }
 .avatar-card {
   position: relative; width: 280px; height: 400px;
-  border-radius: 20px; overflow: hidden;
+  border-radius: 20px;
+  /* overflow:hidden moved to front face so backface is visible */
   transform-style: preserve-3d;
   transition: transform 0.08s linear;
   cursor: pointer;
+  background: transparent;
+  border: none; box-shadow: none;
+}
+
+/* Front / back faces */
+.avatar-card-front {
+  position: absolute; inset: 0; border-radius: 20px; overflow: hidden;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
   background: linear-gradient(145deg, #0d1422, #1a2035, #0d1422);
   border: 1px solid rgba(255,107,53,0.25);
   box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 30px rgba(255,107,53,0.15);
+  transition: box-shadow 0.4s, border-color 0.4s;
 }
+.avatar-card-back {
+  position: absolute; inset: 0; border-radius: 16px; overflow: hidden;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  transform: rotateY(180deg);
+  /* Magic card parchment base */
+  background: linear-gradient(160deg, #100c04 0%, #1e1608 40%, #0e0a04 100%);
+}
+
+/* Flip hint */
+.flip-hint {
+  position: absolute; bottom: 70px; right: 14px; z-index: 20;
+  font-size: 9px; color: rgba(255,215,0,0.45); letter-spacing: 1px;
+  writing-mode: vertical-rl; pointer-events: none;
+  animation: hint-blink 3s ease-in-out infinite;
+}
+@keyframes hint-blink { 0%,100%{opacity:0.45} 50%{opacity:0.9} }
+
+/* ── MAGIC CARD BACK ── */
+.magic-outer-frame {
+  position: absolute; inset: 6px; border-radius: 12px;
+  border: 2px solid #8b6914;
+  box-shadow: inset 0 0 0 1px #f0c040, 0 0 12px rgba(200,160,20,0.3);
+}
+.magic-inner-frame {
+  position: absolute; inset: 12px; border-radius: 9px;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+/* Corner ornaments */
+.magic-corner-orn {
+  position: absolute; width: 18px; height: 18px; z-index: 5;
+  border-color: #c8a020; border-style: solid; border-radius: 3px;
+}
+.magic-corner-orn.tl { top: 14px; left: 14px; border-width: 2px 0 0 2px; }
+.magic-corner-orn.tr { top: 14px; right: 14px; border-width: 2px 2px 0 0; }
+.magic-corner-orn.bl { bottom: 14px; left: 14px; border-width: 0 0 2px 2px; }
+.magic-corner-orn.br { bottom: 14px; right: 14px; border-width: 0 2px 2px 0; }
+/* Diamond ornament dots */
+.magic-corner-orn::after {
+  content: '◆'; position: absolute; font-size: 6px; color: #c8a020;
+  top: -8px; left: -4px;
+}
+.magic-corner-orn.tr::after { left: auto; right: -4px; }
+.magic-corner-orn.bl::after { top: auto; bottom: -8px; }
+.magic-corner-orn.br::after { top: auto; bottom: -8px; left: auto; right: -4px; }
+
+/* Title bar */
+.magic-title-bar {
+  background: linear-gradient(90deg, #1a1200, #2e2000, #1a1200);
+  border-bottom: 1px solid #6b4f10;
+  padding: 7px 10px; display: flex; align-items: center; gap: 6px;
+  flex-shrink: 0;
+}
+.magic-card-name {
+  flex: 1; font-size: 13px; font-weight: 900; letter-spacing: 1px;
+  background: linear-gradient(135deg, #ffd700, #ffaa00, #ffd700);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; font-family: Georgia, serif;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.magic-cost-gems { display: flex; gap: 3px; flex-shrink: 0; }
+.magic-gem {
+  width: 16px; height: 16px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; font-weight: 900; border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Art area */
+.magic-art-area {
+  height: 130px; position: relative; flex-shrink: 0;
+  border-bottom: 1px solid #6b4f10;
+  overflow: hidden;
+}
+.magic-art-bg {
+  position: absolute; inset: 0;
+  background: var(--magic-art-bg, linear-gradient(160deg, #001833, #003366, #001020));
+  transition: background 0.4s;
+}
+.magic-art-glow {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 60%, var(--char-primary,#0088cc) 0%, transparent 70%);
+  opacity: 0.35; mix-blend-mode: screen;
+}
+.magic-art-symbol {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 80px; color: var(--char-primary, #0088cc);
+  opacity: 0.18; font-family: Georgia, serif; font-weight: bold;
+  text-shadow: 0 0 30px currentColor;
+  animation: magic-symbol-rotate 12s linear infinite;
+}
+@keyframes magic-symbol-rotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+.magic-art-title {
+  position: absolute; bottom: 8px; left: 10px; right: 10px;
+  font-size: 10px; color: rgba(255,215,0,0.6); letter-spacing: 2px;
+  font-family: Georgia, serif; text-align: center; font-style: italic;
+}
+
+/* Type line */
+.magic-type-line {
+  background: linear-gradient(90deg, #1a1200, #2e2000, #1a1200);
+  border-top: 1px solid #3a2a06; border-bottom: 1px solid #3a2a06;
+  padding: 4px 10px; display: flex; align-items: center;
+  font-size: 10px; color: #c8a060; flex-shrink: 0;
+  font-family: Georgia, serif;
+}
+.magic-type-line span:first-child { flex: 1; }
+.magic-rarity { font-size: 12px; }
+
+/* Text box */
+.magic-text-box {
+  flex: 1; background: rgba(20,14,4,0.85);
+  padding: 8px 10px; overflow: hidden;
+  border-top: 1px solid #3a2a06;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.magic-stat-row {
+  display: flex; align-items: center; gap: 5px; font-size: 10px;
+}
+.magic-stat-label { width: 36px; color: #c8a060; font-family: Georgia,serif; }
+.magic-stat-pips { flex: 1; display: flex; gap: 2px; }
+.pip { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.pip.on  { background: var(--char-primary, #0088cc); box-shadow: 0 0 4px var(--char-primary,#0088cc); }
+.pip.off { background: #2a2010; border: 1px solid #4a3820; }
+.magic-stat-val { width: 22px; text-align: right; font-size: 10px; font-weight: 700; color: #e8c878; }
+.magic-divider { height: 1px; background: linear-gradient(90deg,transparent,#6b4f10,transparent); margin: 3px 0; flex-shrink: 0; }
+.magic-misc-row {
+  font-size: 10px; color: #a08040; display: flex; gap: 6px;
+  font-family: Georgia, serif;
+}
+.magic-misc-row strong { color: #e8c878; }
+.magic-flavor {
+  margin-top: auto; font-size: 9.5px; color: #806040; font-style: italic;
+  font-family: Georgia, serif; line-height: 1.5; text-align: center;
+  padding-top: 4px; border-top: 1px solid #2a1a06;
+}
+
+/* Footer */
+.magic-footer {
+  background: linear-gradient(90deg, #0e0900, #1a1200, #0e0900);
+  border-top: 1px solid #6b4f10;
+  padding: 4px 10px; display: flex; align-items: center;
+  font-size: 8px; color: #6b5010; letter-spacing: 1px; flex-shrink: 0;
+}
+.magic-footer span:last-child { margin-left: auto; color: #8b6914; font-weight: 700; }
 
 /* Holographic foil overlay */
 .avatar-card-holo {
@@ -352,8 +505,8 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   font-size: 9px; color: rgba(255,255,255,0.3); letter-spacing: 2px; font-weight: 700;
 }
 
-/* Scan lines texture */
-.avatar-card::before {
+/* Scan lines texture (front face only) */
+.avatar-card-front::before {
   content: '';
   position: absolute; inset: 0; border-radius: 20px; z-index: 1;
   background: repeating-linear-gradient(
@@ -638,43 +791,115 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
         <!-- 3D Holographic Card -->
         <div class="avatar-card-scene">
           <div class="avatar-card" id="avatar-card">
-            <div class="avatar-card-holo" id="card-holo"></div>
-            <div class="avatar-card-shine" id="card-shine"></div>
-            <div class="avatar-card-corner corner-tl"></div>
-            <div class="avatar-card-corner corner-tr"></div>
-            <div class="avatar-card-corner corner-bl"></div>
-            <div class="avatar-card-corner corner-br"></div>
 
-            <!-- Badge top-left -->
-            <div class="avatar-card-badge">
-              <span class="avatar-card-level" id="card-level-badge">Lv. 1</span>
-              <span class="avatar-card-id">ID #001</span>
-            </div>
+            <!-- ── FRONT FACE ────────────────────────────── -->
+            <div class="avatar-card-front">
+              <div class="avatar-card-holo" id="card-holo"></div>
+              <div class="avatar-card-shine" id="card-shine"></div>
+              <div class="avatar-card-corner corner-tl"></div>
+              <div class="avatar-card-corner corner-tr"></div>
+              <div class="avatar-card-corner corner-bl"></div>
+              <div class="avatar-card-corner corner-br"></div>
+              <div class="flip-hint">点击翻转</div>
 
-            <!-- Real character image + CSS effects layers -->
-            <div class="char-img-wrap" id="char-img-wrap">
-              <!-- Aura glow layers (theme-responsive) -->
-              <div class="char-aura-l" id="char-aura-l"></div>
-              <div class="char-aura-r" id="char-aura-r"></div>
-              <!-- Radial field lines canvas -->
-              <canvas class="char-field-canvas" id="char-field-canvas" width="280" height="400"></canvas>
-              <!-- The actual character image -->
-              <img class="char-real-img" id="char-real-img" src="/assets/gojo.png" alt="Gojo Satoru" draggable="false"/>
-              <!-- Eye glow overlay (positioned over eyes) -->
-              <div class="char-eye-glow-l" id="char-eye-glow-l"></div>
-              <div class="char-eye-glow-r" id="char-eye-glow-r"></div>
-              <!-- Particle canvas -->
-              <canvas class="char-particle-canvas" id="char-particle-canvas" width="280" height="400"></canvas>
-            </div>
-
-            <!-- Bottom info strip -->
-            <div class="avatar-card-info">
-              <div class="avatar-card-name" id="card-char-name">觉醒者</div>
-              <div class="avatar-card-title" id="card-char-title">普通人</div>
-              <div class="avatar-card-expbar">
-                <div class="avatar-card-expfill" id="card-exp-fill" style="width:0%"></div>
+              <div class="avatar-card-badge">
+                <span class="avatar-card-level" id="card-level-badge">Lv. 1</span>
+                <span class="avatar-card-id">ID #001</span>
               </div>
-            </div>
+
+              <div class="char-img-wrap" id="char-img-wrap">
+                <div class="char-aura-l" id="char-aura-l"></div>
+                <div class="char-aura-r" id="char-aura-r"></div>
+                <canvas class="char-field-canvas" id="char-field-canvas" width="280" height="400"></canvas>
+                <img class="char-real-img" id="char-real-img" src="/assets/gojo.png" alt="Gojo Satoru" draggable="false"/>
+                <div class="char-eye-glow-l" id="char-eye-glow-l"></div>
+                <div class="char-eye-glow-r" id="char-eye-glow-r"></div>
+                <canvas class="char-particle-canvas" id="char-particle-canvas" width="280" height="400"></canvas>
+              </div>
+
+              <div class="avatar-card-info">
+                <div class="avatar-card-name" id="card-char-name">觉醒者</div>
+                <div class="avatar-card-title" id="card-char-title">普通人</div>
+                <div class="avatar-card-expbar">
+                  <div class="avatar-card-expfill" id="card-exp-fill" style="width:0%"></div>
+                </div>
+              </div>
+            </div><!-- end avatar-card-front -->
+
+            <!-- ── BACK FACE: Magic Card ──────────────────── -->
+            <div class="avatar-card-back" id="card-back">
+              <div class="magic-outer-frame"></div>
+              <div class="magic-corner-orn tl"></div>
+              <div class="magic-corner-orn tr"></div>
+              <div class="magic-corner-orn bl"></div>
+              <div class="magic-corner-orn br"></div>
+              <div class="magic-inner-frame">
+
+                <!-- Title bar -->
+                <div class="magic-title-bar">
+                  <span class="magic-card-name" id="magic-name">觉醒者</span>
+                  <div class="magic-cost-gems">
+                    <div class="magic-gem" style="background:#1a3a6e;color:#4a9eff">★</div>
+                    <div class="magic-gem" style="background:#3a1a6e;color:#af52de">◆</div>
+                    <div class="magic-gem" style="background:#3a1a00;color:#ffd700">⚡</div>
+                  </div>
+                </div>
+
+                <!-- Art area -->
+                <div class="magic-art-area">
+                  <div class="magic-art-bg" id="magic-art-bg"></div>
+                  <div class="magic-art-glow"></div>
+                  <div class="magic-art-symbol">∞</div>
+                  <div class="magic-art-title" id="magic-art-title">AWAKENING · LV.1</div>
+                </div>
+
+                <!-- Type line -->
+                <div class="magic-type-line">
+                  <span id="magic-type">觉醒者 — 觉醒候补</span>
+                  <span class="magic-rarity" id="magic-rarity">◆</span>
+                </div>
+
+                <!-- Stat text box -->
+                <div class="magic-text-box">
+                  <div class="magic-stat-row">
+                    <span class="magic-stat-label">专注</span>
+                    <div class="magic-stat-pips" id="pip-focus"></div>
+                    <span class="magic-stat-val" id="pip-focus-val">-</span>
+                  </div>
+                  <div class="magic-stat-row">
+                    <span class="magic-stat-label">锻炼</span>
+                    <div class="magic-stat-pips" id="pip-exercise"></div>
+                    <span class="magic-stat-val" id="pip-exercise-val">-</span>
+                  </div>
+                  <div class="magic-stat-row">
+                    <span class="magic-stat-label">学习</span>
+                    <div class="magic-stat-pips" id="pip-study"></div>
+                    <span class="magic-stat-val" id="pip-study-val">-</span>
+                  </div>
+                  <div class="magic-stat-row">
+                    <span class="magic-stat-label">冥想</span>
+                    <div class="magic-stat-pips" id="pip-reflection"></div>
+                    <span class="magic-stat-val" id="pip-reflection-val">-</span>
+                  </div>
+                  <div class="magic-divider"></div>
+                  <div class="magic-misc-row">
+                    <span>连击 <strong id="magic-streak">0</strong>天</span>
+                    <span>护盾 <strong id="magic-shields">0</strong></span>
+                    <span>EXP <strong id="magic-exp">0</strong></span>
+                  </div>
+                  <div class="magic-divider"></div>
+                  <div class="magic-flavor" id="magic-flavor">"觉醒之路，始于第一步。"</div>
+                </div>
+
+                <!-- Footer -->
+                <div class="magic-footer">
+                  <span>觉醒系统 · AWAKENING SYSTEM</span>
+                  <span id="magic-footer-id">ID #001</span>
+                </div>
+
+              </div><!-- end magic-inner-frame -->
+            </div><!-- end avatar-card-back -->
+
           </div>
         </div>
 
@@ -1619,12 +1844,15 @@ let _charTheme = localStorage.getItem('charTheme') || 'sixeyes';
 
 function applyCharTheme(name) {
   const t = CHAR_THEMES[name] || CHAR_THEMES.sixeyes;
-  const card = document.getElementById('avatar-card');
+  const card  = document.getElementById('avatar-card');
+  const front = card?.querySelector('.avatar-card-front');
   if (!card) return;
   card.style.setProperty('--char-primary', t.primary);
   card.style.setProperty('--char-secondary', t.secondary);
-  card.style.boxShadow = `0 20px 60px rgba(0,0,0,0.6), 0 0 30px ${t.primary}40`;
-  card.style.borderColor = `${t.primary}45`;
+  if (front) {
+    front.style.boxShadow = `0 20px 60px rgba(0,0,0,0.6), 0 0 30px ${t.primary}40`;
+    front.style.borderColor = `${t.primary}45`;
+  }
   // Update canvas effects
   _particleColor = t.primary;
   drawFieldLines(t.primary);
@@ -1717,6 +1945,9 @@ function drawFieldLines(color) {
 }
 
 // ── 3D card + image parallax ──────────────────────────────────────
+let _isFlipped = false;
+let _flipAnimating = false;
+
 function initCharCard3D() {
   const card  = document.getElementById('avatar-card');
   const holo  = document.getElementById('card-holo');
@@ -1731,22 +1962,26 @@ function initCharCard3D() {
   let targetRx  = 0, targetRy  = 0;
 
   card.addEventListener('mousemove', e => {
+    if (_flipAnimating) return;
     const rect = card.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width  - 0.5;
     const y = (e.clientY - rect.top)  / rect.height - 0.5;
-    targetRy =  x * 24;
+    // When viewing back face, negate X so the tilt feels natural
+    targetRy = _isFlipped ? -x * 24 : x * 24;
     targetRx = -y * 18;
 
-    // Holographic foil follows cursor
-    const hx = (e.clientX - rect.left) / rect.width  * 100;
-    const hy = (e.clientY - rect.top)  / rect.height * 100;
-    holo.style.background = `conic-gradient(from ${x*35+180}deg at ${hx}% ${hy}%,
-      rgba(0,200,255,0.22) 0deg, rgba(255,215,0,0.18) 60deg,
-      rgba(175,82,222,0.16) 120deg, rgba(0,200,255,0.22) 180deg,
-      rgba(255,107,53,0.14) 240deg, rgba(0,200,255,0.22) 300deg,
-      rgba(255,215,0,0.18) 360deg)`;
-    shine.style.background =
-      `radial-gradient(circle at ${hx}% ${hy}%, rgba(255,255,255,0.16) 0%, transparent 58%)`;
+    // Holographic foil follows cursor (front face only)
+    if (!_isFlipped) {
+      const hx = (e.clientX - rect.left) / rect.width  * 100;
+      const hy = (e.clientY - rect.top)  / rect.height * 100;
+      holo.style.background = `conic-gradient(from ${x*35+180}deg at ${hx}% ${hy}%,
+        rgba(0,200,255,0.22) 0deg, rgba(255,215,0,0.18) 60deg,
+        rgba(175,82,222,0.16) 120deg, rgba(0,200,255,0.22) 180deg,
+        rgba(255,107,53,0.14) 240deg, rgba(0,200,255,0.22) 300deg,
+        rgba(255,215,0,0.18) 360deg)`;
+      shine.style.background =
+        `radial-gradient(circle at ${hx}% ${hy}%, rgba(255,255,255,0.16) 0%, transparent 58%)`;
+    }
 
     // Image subtle parallax (moves opposite to tilt for depth)
     if (img) img.style.transform =
@@ -1756,13 +1991,36 @@ function initCharCard3D() {
     if (auraR) auraR.style.transform = `translate(${x * 12}px, ${y * 8}px)`;
   });
 
+  // ── Flip on click ────────────────────────────────────────────────
+  card.addEventListener('click', () => {
+    if (_flipAnimating) return;
+    _flipAnimating = true;
+    _isFlipped = !_isFlipped;
+
+    const targetFlipY = _isFlipped ? 180 : 0;
+    card.style.transition = 'transform 0.65s cubic-bezier(0.6,0,0.4,1)';
+    card.style.transform = `perspective(800px) rotateX(0deg) rotateY(${targetFlipY}deg)`;
+
+    // Reset lerp state
+    currentRx = 0; currentRy = 0;
+    targetRx  = 0; targetRy  = 0;
+
+    setTimeout(() => {
+      card.style.transition = 'transform 0.08s linear';
+      _flipAnimating = false;
+    }, 680);
+  });
+
   function lerp(a, b, t) { return a + (b - a) * t; }
 
   (function animateTilt() {
-    currentRx = lerp(currentRx, isHovering ? targetRx : 0, 0.1);
-    currentRy = lerp(currentRy, isHovering ? targetRy : 0, 0.1);
-    card.style.transform =
-      `perspective(800px) rotateX(${currentRx}deg) rotateY(${currentRy}deg)`;
+    if (!_flipAnimating) {
+      currentRx = lerp(currentRx, isHovering ? targetRx : 0, 0.1);
+      currentRy = lerp(currentRy, isHovering ? targetRy : 0, 0.1);
+      const flipBase = _isFlipped ? 180 : 0;
+      card.style.transform =
+        `perspective(800px) rotateX(${currentRx}deg) rotateY(${currentRy + flipBase}deg)`;
+    }
     requestAnimationFrame(animateTilt);
   })();
 
@@ -1773,6 +2031,79 @@ function initCharCard3D() {
     if (auraL) auraL.style.transform = '';
     if (auraR) auraR.style.transform = '';
   });
+}
+
+// ── Populate magic card back ──────────────────────────────────────
+function populateMagicCard(user, analytics, today) {
+  const cs  = analytics.category_stats;
+  const lvl = user.level;
+  const streak = user.global_streak;
+
+  // Name
+  const nameEl = document.getElementById('magic-name');
+  if (nameEl) nameEl.textContent = user.name;
+
+  // Rarity based on level
+  const rarity = lvl < 5 ? '◆' : lvl < 15 ? '◆◆' : lvl < 30 ? '◆◆◆' : '◆◆◆◆';
+  const artBg  = lvl < 5
+    ? 'linear-gradient(160deg, #0a1520, #0d2030, #0a0d15)'
+    : lvl < 15
+    ? 'linear-gradient(160deg, #001833, #003366, #001020)'
+    : lvl < 30
+    ? 'linear-gradient(160deg, #1a0033, #330066, #0d0020)'
+    : 'linear-gradient(160deg, #1a1000, #3a2500, #110900)';
+
+  const rarityEl = document.getElementById('magic-rarity');
+  if (rarityEl) rarityEl.textContent = rarity;
+
+  const artBgEl = document.getElementById('magic-art-bg');
+  if (artBgEl) artBgEl.style.background = artBg;
+
+  // Art subtitle
+  const stages = ['NOVICE', 'AWAKENING', 'ASCENDED', 'LEGENDARY', 'TRANSCENDENT'];
+  const stageIdx = Math.min(4, Math.floor(lvl / 8));
+  const artTitleEl = document.getElementById('magic-art-title');
+  if (artTitleEl) artTitleEl.textContent = stages[stageIdx] + ' · LV.' + lvl;
+
+  // Type line
+  const domain = lvl < 10 ? '觉醒候补' : lvl < 20 ? '领域展开者' : lvl < 30 ? '无限术式使' : '六眼持有者';
+  const typeEl = document.getElementById('magic-type');
+  if (typeEl) typeEl.textContent = user.title + ' — ' + domain;
+
+  // Pip stats (0–100 score → 0–10 pips)
+  ['focus','exercise','study','reflection'].forEach(cat => {
+    const score = Math.round(cs[cat]?.score ?? 0);
+    const pips  = Math.round(score / 10);
+    const pipEl = document.getElementById('pip-' + cat);
+    const valEl = document.getElementById('pip-' + cat + '-val');
+    if (pipEl) pipEl.innerHTML = Array.from({length: 10}, (_, i) =>
+      `<div class="pip ${i < pips ? 'on' : 'off'}"></div>`).join('');
+    if (valEl) valEl.textContent = score;
+  });
+
+  // Misc stats
+  const streakEl = document.getElementById('magic-streak');
+  const shieldsEl = document.getElementById('magic-shields');
+  const expEl    = document.getElementById('magic-exp');
+  if (streakEl)  streakEl.textContent  = streak;
+  if (shieldsEl) shieldsEl.textContent = today.shields;
+  if (expEl)     expEl.textContent     = user.total_exp.toLocaleString();
+
+  // Footer ID
+  const footerEl = document.getElementById('magic-footer-id');
+  if (footerEl) footerEl.textContent = 'ID #' + String(user.id || 1).padStart(3, '0');
+
+  // Flavor quotes
+  const flavors = [
+    '"觉醒之路，始于第一步。"',
+    '"七日之功，初见成效。"',
+    '"二十一日，习惯成形。"',
+    '"无下限。任何事皆可能。"',
+    '"宇宙即我，我即宇宙。"',
+  ];
+  const fi = streak === 0 ? 0 : streak < 7 ? 1 : streak < 21 ? 2 : streak < 66 ? 3 : 4;
+  const flavorEl = document.getElementById('magic-flavor');
+  if (flavorEl) flavorEl.textContent = flavors[fi];
 }
 
 async function loadCharacter() {
@@ -1804,6 +2135,9 @@ async function loadCharacter() {
   // Need shields from /api/today — use analytics streak for simplicity, fetch today
   const today = await API.get('/api/today');
   document.getElementById('chip-shields').textContent = today.shields;
+
+  // Populate magic card back
+  populateMagicCard(user, analytics, today);
 
   // Attributes
   const cs = analytics.category_stats;
