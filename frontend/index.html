@@ -295,6 +295,301 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .char-page-left  { display: flex; flex-direction: column; gap: 16px; width: 320px; flex-shrink: 0; }
 .char-page-right { flex: 1; display: flex; flex-direction: column; gap: 16px; }
 
+/* ═══════════════════════════════════════════════
+   BOSS战场 PAGE
+═══════════════════════════════════════════════ */
+#page-boss { gap: 0; }
+
+/* Boss顶部战场区域 */
+.boss-arena {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+/* Boss左侧：敌方区 */
+.boss-enemy-panel {
+  background: linear-gradient(160deg, #1a0505 0%, #2d0808 60%, #1a0505 100%);
+  border: 1px solid #5a1010;
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.boss-enemy-panel::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,59,48,0.02) 3px,rgba(255,59,48,0.02) 4px);
+  pointer-events: none;
+}
+.boss-icon-wrap {
+  text-align: center; margin-bottom: 12px; position: relative;
+}
+.boss-icon {
+  font-size: 72px; line-height: 1;
+  display: inline-block;
+  filter: drop-shadow(0 0 20px rgba(255,59,48,0.6));
+  transition: filter 0.4s;
+}
+.boss-icon.phase-2 { animation: boss-shake-mild 0.8s ease-in-out infinite; filter: drop-shadow(0 0 25px rgba(255,100,0,0.7)); }
+.boss-icon.phase-3 { animation: boss-shake-rage 0.3s ease-in-out infinite; filter: drop-shadow(0 0 35px rgba(255,200,0,0.9)); }
+@keyframes boss-shake-mild {
+  0%,100%{transform:rotate(-2deg) scale(1)} 50%{transform:rotate(2deg) scale(1.04)}
+}
+@keyframes boss-shake-rage {
+  0%,100%{transform:translate(-2px,-1px) scale(1.02)} 25%{transform:translate(2px,1px) scale(1.0)} 50%{transform:translate(-1px,2px) scale(1.03)} 75%{transform:translate(1px,-2px)}
+}
+.boss-icon.dead { filter: grayscale(1) opacity(0.4); animation: none; }
+
+.boss-enemy-name {
+  font-size: 20px; font-weight: 900; letter-spacing: 2px;
+  color: #ff6b6b; text-align: center; margin-bottom: 4px;
+}
+.boss-phase-badge {
+  text-align: center; margin-bottom: 10px;
+}
+.boss-phase-tag {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 2px 10px; border-radius: 20px; letter-spacing: 1px;
+}
+.boss-phase-tag.p1 { background: rgba(74,158,255,0.2); color: #4a9eff; border: 1px solid #4a9eff44; }
+.boss-phase-tag.p2 { background: rgba(255,107,53,0.2); color: #ff6b35; border: 1px solid #ff6b3544; }
+.boss-phase-tag.p3 { background: rgba(255,59,48,0.25); color: #ff3b30; border: 1px solid #ff3b3066; }
+
+.boss-phase-quote {
+  font-size: 11px; color: rgba(255,180,180,0.6); font-style: italic;
+  text-align: center; min-height: 18px; margin-bottom: 14px;
+  transition: all 0.4s;
+}
+
+/* HP条 */
+.boss-hp-section { margin-bottom: 12px; }
+.boss-hp-label { font-size: 10px; color: #ff6b6b; letter-spacing: 2px; font-weight: 700; margin-bottom: 4px; }
+.boss-hp-bar-bg {
+  background: rgba(255,255,255,0.06); border-radius: 6px; height: 18px;
+  overflow: hidden; position: relative; border: 1px solid rgba(255,59,48,0.3);
+}
+.boss-hp-bar-fill {
+  height: 100%; border-radius: 6px;
+  background: linear-gradient(90deg, #8b0000, #ff3b30, #ff6b35);
+  transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1);
+  position: relative;
+}
+.boss-hp-bar-fill::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+  animation: hp-shimmer 2s linear infinite;
+}
+@keyframes hp-shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
+.boss-hp-text {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  font-size: 10px; font-weight: 900; color: rgba(255,255,255,0.9); z-index: 1;
+}
+
+/* 玩家伤害条 */
+.player-dmg-section { margin-bottom: 14px; }
+.player-dmg-label { font-size: 10px; color: #ffd700; letter-spacing: 2px; font-weight: 700; margin-bottom: 4px; }
+.player-dmg-bar-bg {
+  background: rgba(255,255,255,0.06); border-radius: 6px; height: 14px;
+  overflow: hidden; border: 1px solid rgba(255,215,0,0.25);
+}
+.player-dmg-bar-fill {
+  height: 100%; border-radius: 6px;
+  background: linear-gradient(90deg, #ff6b35, #ffd700);
+  transition: width 0.8s ease;
+}
+
+/* 伤害数字 */
+.boss-dmg-breakdown {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 6px; font-size: 11px;
+}
+.boss-dmg-item { background: rgba(255,255,255,0.04); border-radius: 6px; padding: 6px 8px; }
+.boss-dmg-item label { display: block; font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-bottom: 2px; }
+.boss-dmg-item strong { font-size: 14px; font-weight: 900; }
+.dmg-auto { color: #ff6b35; }
+.dmg-card { color: #ffd700; }
+.dmg-regen { color: #ff3b30; font-size: 12px !important; }
+.dmg-rate { color: #34c759; }
+
+/* 右侧：玩家属性+手牌 */
+.boss-player-panel {
+  display: flex; flex-direction: column; gap: 16px;
+}
+.boss-stats-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+}
+.boss-stat-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.boss-stat-icon { font-size: 14px; width: 20px; text-align: center; }
+.boss-stat-name { font-size: 11px; font-weight: 700; color: var(--muted); width: 24px; letter-spacing: 1px; }
+.boss-stat-bar-bg { flex: 1; background: var(--bg3); border-radius: 3px; height: 6px; overflow: hidden; }
+.boss-stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+.boss-stat-val { font-size: 11px; color: var(--text); width: 28px; text-align: right; font-weight: 700; }
+
+.boss-auto-info {
+  border-top: 1px solid var(--border); margin-top: 8px; padding-top: 8px;
+  display: flex; justify-content: space-between; font-size: 11px; color: var(--muted);
+}
+.boss-auto-info strong { color: var(--orange); }
+
+/* 手牌区域 */
+.boss-hand-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+  flex: 1;
+}
+.boss-hand-title {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.boss-hand-title h3 { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 2px; flex: 1; }
+.boss-hand-count { font-size: 11px; color: var(--orange); font-weight: 700; }
+
+.hand-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+}
+.hand-empty {
+  text-align: center; padding: 20px; color: var(--muted); font-size: 12px; grid-column: 1/-1;
+}
+
+/* 卡牌 */
+.battle-card {
+  border-radius: 10px; padding: 12px 10px;
+  cursor: pointer; position: relative; overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+  text-align: center; user-select: none;
+  border: 1px solid;
+}
+.battle-card:hover { transform: translateY(-4px) scale(1.03); }
+.battle-card:active { transform: translateY(-1px) scale(0.98); }
+.battle-card.playing { animation: card-fly 0.5s ease-in forwards; pointer-events: none; }
+@keyframes card-fly {
+  0%{transform:scale(1.1)} 60%{transform:translateY(-80px) scale(0.8) rotate(5deg)} 100%{transform:translateY(-120px) scale(0) rotate(15deg); opacity:0}
+}
+.battle-card.common  { background: linear-gradient(135deg,#1a1f27,#232b36); border-color: #3a4455; }
+.battle-card.rare    { background: linear-gradient(135deg,#0d1a30,#122240); border-color: #4a9eff66; box-shadow: 0 0 8px rgba(74,158,255,0.15); }
+.battle-card.epic    { background: linear-gradient(135deg,#1a1000,#2a1a00); border-color: #ffd70088; box-shadow: 0 0 12px rgba(255,215,0,0.2); }
+.battle-card.epic::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg,transparent,rgba(255,215,0,0.06),transparent);
+  animation: epic-shimmer 2.5s linear infinite;
+}
+@keyframes epic-shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
+
+.card-rarity-dot {
+  position: absolute; top: 7px; right: 7px;
+  width: 7px; height: 7px; border-radius: 50%;
+}
+.common .card-rarity-dot  { background: #8a9bb0; }
+.rare   .card-rarity-dot  { background: #4a9eff; box-shadow: 0 0 6px #4a9eff; }
+.epic   .card-rarity-dot  { background: #ffd700; box-shadow: 0 0 8px #ffd700; animation: dot-pulse 1s ease-in-out infinite; }
+@keyframes dot-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.card-category-icon { font-size: 22px; margin-bottom: 4px; display: block; }
+.card-name { font-size: 10px; font-weight: 900; letter-spacing: 1px; margin-bottom: 2px; }
+.common  .card-name { color: #c0cad8; }
+.rare    .card-name { color: #4a9eff; }
+.epic    .card-name { color: #ffd700; }
+
+.card-type-tag {
+  font-size: 8px; padding: 1px 5px; border-radius: 8px; margin-bottom: 6px;
+  display: inline-block; font-weight: 700; letter-spacing: 1px;
+}
+.attack  .card-type-tag { background: rgba(255,59,48,0.2); color: #ff6b6b; }
+.skill   .card-type-tag { background: rgba(255,215,0,0.15); color: #ffd700; }
+.defense .card-type-tag { background: rgba(52,199,89,0.15); color: #34c759; }
+
+.card-power { font-size: 18px; font-weight: 900; margin-bottom: 2px; }
+.attack  .card-power { color: #ff6b35; }
+.skill   .card-power { color: #ffd700; }
+.defense .card-power { color: #34c759; }
+
+.card-play-btn {
+  font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  padding: 3px 10px; border-radius: 8px; border: none; cursor: pointer;
+  margin-top: 4px; transition: background 0.2s;
+}
+.attack  .card-play-btn { background: rgba(255,107,53,0.2); color: #ff6b35; }
+.attack  .card-play-btn:hover { background: rgba(255,107,53,0.4); }
+.skill   .card-play-btn { background: rgba(255,215,0,0.2); color: #ffd700; }
+.skill   .card-play-btn:hover { background: rgba(255,215,0,0.35); }
+.defense .card-play-btn { background: rgba(52,199,89,0.2); color: #34c759; }
+.defense .card-play-btn:hover { background: rgba(52,199,89,0.35); }
+
+/* 战斗日志 */
+.boss-battle-log { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.battle-log-rows { display: flex; flex-direction: column; gap: 6px; }
+.battle-log-row {
+  display: grid; grid-template-columns: 38px 1fr 64px;
+  align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 8px;
+  border-left: 3px solid transparent;
+  background: var(--bg3); font-size: 11px;
+}
+.battle-log-row.log-win { border-left-color: #34c759; }
+.battle-log-row.log-miss { border-left-color: #ff3b30; }
+.battle-log-row.log-partial { border-left-color: #ff6b35; }
+.log-day { font-weight: 900; color: var(--muted); font-size: 10px; }
+.log-bar-wrap { display: flex; flex-direction: column; gap: 3px; }
+.log-bar-bg { background: var(--bg2); border-radius: 2px; height: 5px; overflow: hidden; }
+.log-bar-fill-dmg { height: 100%; background: linear-gradient(90deg,#ff6b35,#ffd700); border-radius: 2px; }
+.log-bar-fill-reg { height: 100%; background: rgba(255,59,48,0.5); border-radius: 2px; }
+.log-nums { text-align: right; }
+.log-dmg-num { font-weight: 900; color: #ff6b35; }
+.log-reg-num { font-size: 9px; color: #ff3b30; }
+.log-ratio { font-size: 10px; color: var(--muted); }
+
+/* 历史战报 */
+.boss-history-section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.boss-history-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.boss-history-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg3); border-radius: 8px; padding: 10px 14px;
+  border-left: 3px solid transparent; font-size: 12px;
+}
+.boss-history-row.won  { border-left-color: #34c759; }
+.boss-history-row.lost { border-left-color: #ff3b30; }
+.history-result-icon { font-size: 18px; flex-shrink: 0; }
+.history-boss-name { font-weight: 900; flex: 1; }
+.history-week { font-size: 10px; color: var(--muted); }
+.history-rate { font-size: 11px; color: var(--muted); }
+.history-title { font-size: 10px; color: var(--yellow); font-style: italic; }
+.history-exp { font-size: 11px; color: var(--orange); font-weight: 700; }
+
+/* 胜利/失败 banner */
+.boss-result-banner {
+  display: none; text-align: center; padding: 16px;
+  border-radius: 12px; margin-bottom: 16px; font-size: 14px; font-weight: 900;
+  letter-spacing: 2px; animation: banner-pulse 2s ease-in-out infinite;
+}
+.boss-result-banner.won  { background: linear-gradient(135deg,rgba(52,199,89,0.15),rgba(0,255,127,0.08)); border: 1px solid rgba(52,199,89,0.4); color: #34c759; }
+.boss-result-banner.lost { background: linear-gradient(135deg,rgba(255,59,48,0.12),rgba(139,0,0,0.08)); border: 1px solid rgba(255,59,48,0.35); color: #ff6b6b; }
+@keyframes banner-pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+
+/* 得牌 Toast */
+.card-toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  animation: toast-in 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  max-width: 260px;
+}
+.card-toast.toast-out { animation: toast-out 0.3s ease-in forwards; }
+@keyframes toast-in  { from{transform:translateX(120%) scale(0.8); opacity:0} to{transform:translateX(0) scale(1); opacity:1} }
+@keyframes toast-out { from{opacity:1; transform:translateX(0)} to{opacity:0; transform:translateX(60%)} }
+.toast-icon { font-size: 24px; flex-shrink: 0; }
+.toast-text { flex: 1; }
+.toast-title { font-size: 11px; color: var(--muted); }
+.toast-card-name { font-size: 13px; font-weight: 900; }
+.toast-card-name.common { color: #c0cad8; }
+.toast-card-name.rare   { color: #4a9eff; }
+.toast-card-name.epic   { color: #ffd700; }
+.toast-power { font-size: 11px; color: var(--muted); }
+
 /* 3D Card container */
 .avatar-card-scene {
   width: 280px; margin: 0 auto;
@@ -669,6 +964,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   <nav id="sidebar">
     <div class="nav-item active" data-page="dashboard"><span class="nav-icon">🏠</span> 主界面</div>
     <div class="nav-item" data-page="character"><span class="nav-icon">👤</span> 角色档案</div>
+    <div class="nav-item" data-page="boss"><span class="nav-icon">👹</span> BOSS战场</div>
     <div class="nav-item" data-page="analytics"><span class="nav-icon">📊</span> 战况报告</div>
     <div class="nav-item" data-page="achievements"><span class="nav-icon">🏆</span> 成就殿堂</div>
     <div class="nav-item" data-page="challenges"><span class="nav-icon">🎯</span> 挑战模式</div>
@@ -765,7 +1061,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
             </div>
           </div>
 
-          <div class="card">
+          <div class="card boss-summary-card" onclick="showPage('boss')" style="cursor:pointer">
             <div class="card-title">本周 BOSS 战</div>
             <div class="boss-header">
               <span style="font-size:18px">👹</span>
@@ -775,7 +1071,10 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
             <div class="boss-progress-bg">
               <div class="boss-progress-fill" id="boss-bar" style="width:0%"></div>
             </div>
-            <div class="boss-rate"><span id="boss-rate-text">0%</span> / 目标 80%</div>
+            <div class="boss-rate">
+              <span id="boss-rate-text">0%</span>
+              <span style="float:right;font-size:10px;color:var(--orange)">点击进入战场 →</span>
+            </div>
           </div>
         </div>
 
@@ -1080,6 +1379,136 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
       </div>
     </div>
 
+    <!-- ╔══ BOSS战场 ══╗ -->
+    <div id="page-boss" class="page">
+
+      <!-- 胜利/失败 banner -->
+      <div class="boss-result-banner" id="boss-result-banner"></div>
+
+      <!-- 战场主区域 -->
+      <div class="boss-arena">
+
+        <!-- 左：BOSS 敌方面板 -->
+        <div class="boss-enemy-panel">
+          <div class="boss-icon-wrap">
+            <span class="boss-icon" id="boss-page-icon">👹</span>
+          </div>
+          <div class="boss-enemy-name" id="boss-page-name">???</div>
+          <div class="boss-phase-badge">
+            <span class="boss-phase-tag p1" id="boss-phase-tag">相位一：潜伏</span>
+          </div>
+          <div class="boss-phase-quote" id="boss-phase-quote"></div>
+
+          <!-- BOSS HP -->
+          <div class="boss-hp-section">
+            <div class="boss-hp-label">BOSS HP</div>
+            <div class="boss-hp-bar-bg">
+              <div class="boss-hp-bar-fill" id="boss-hp-fill" style="width:100%"></div>
+              <div class="boss-hp-text" id="boss-hp-text">---</div>
+            </div>
+          </div>
+
+          <!-- 玩家总伤害 -->
+          <div class="player-dmg-section">
+            <div class="player-dmg-label">我方总输出</div>
+            <div class="player-dmg-bar-bg">
+              <div class="player-dmg-bar-fill" id="player-dmg-fill" style="width:0%"></div>
+            </div>
+          </div>
+
+          <!-- 伤害数字分解 -->
+          <div class="boss-dmg-breakdown">
+            <div class="boss-dmg-item">
+              <label>自动伤害</label>
+              <strong class="dmg-auto" id="auto-dmg-num">0</strong>
+            </div>
+            <div class="boss-dmg-item">
+              <label>手牌伤害</label>
+              <strong class="dmg-card" id="card-dmg-num">0</strong>
+            </div>
+            <div class="boss-dmg-item">
+              <label>BOSS回血</label>
+              <strong class="dmg-regen" id="regen-num">0</strong>
+            </div>
+            <div class="boss-dmg-item">
+              <label>完成率</label>
+              <strong class="dmg-rate" id="completion-rate-num">0%</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右：玩家属性 + 手牌 -->
+        <div class="boss-player-panel">
+
+          <!-- 属性面板 -->
+          <div class="boss-stats-card">
+            <div class="card-title">角色属性</div>
+            <div class="boss-stat-row">
+              <span class="boss-stat-icon">💪</span>
+              <span class="boss-stat-name">体力</span>
+              <div class="boss-stat-bar-bg"><div class="boss-stat-bar-fill" id="stat-str" style="width:0%;background:#ff6b35"></div></div>
+              <span class="boss-stat-val" id="stat-str-val">0</span>
+            </div>
+            <div class="boss-stat-row">
+              <span class="boss-stat-icon">📚</span>
+              <span class="boss-stat-name">智慧</span>
+              <div class="boss-stat-bar-bg"><div class="boss-stat-bar-fill" id="stat-int" style="width:0%;background:#4a9eff"></div></div>
+              <span class="boss-stat-val" id="stat-int-val">0</span>
+            </div>
+            <div class="boss-stat-row">
+              <span class="boss-stat-icon">⚡</span>
+              <span class="boss-stat-name">专注</span>
+              <div class="boss-stat-bar-bg"><div class="boss-stat-bar-fill" id="stat-agi" style="width:0%;background:#ffd700"></div></div>
+              <span class="boss-stat-val" id="stat-agi-val">0</span>
+            </div>
+            <div class="boss-stat-row">
+              <span class="boss-stat-icon">✍️</span>
+              <span class="boss-stat-name">意志</span>
+              <div class="boss-stat-bar-bg"><div class="boss-stat-bar-fill" id="stat-wis" style="width:0%;background:#34c759"></div></div>
+              <span class="boss-stat-val" id="stat-wis-val">0</span>
+            </div>
+            <div class="boss-auto-info">
+              <span>本周自动伤害</span>
+              <span><strong id="boss-auto-atk">---</strong></span>
+            </div>
+            <div class="boss-auto-info" style="margin-top:2px">
+              <span>已出牌 / 手牌</span>
+              <span><strong id="boss-card-counts">0 / 0</strong></span>
+            </div>
+          </div>
+
+          <!-- 手牌区 -->
+          <div class="boss-hand-card">
+            <div class="boss-hand-title">
+              <h3>🃏 手牌</h3>
+              <span class="boss-hand-count" id="hand-count-badge">0张</span>
+            </div>
+            <div class="hand-grid" id="hand-grid">
+              <div class="hand-empty">打卡后获得战斗卡牌</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 战斗日志 -->
+      <div class="boss-battle-log">
+        <div class="card-title">本周战斗日志</div>
+        <div class="battle-log-rows" id="battle-log-rows">
+          <div style="color:var(--muted);font-size:12px">暂无数据，开始打卡后生成日志</div>
+        </div>
+      </div>
+
+      <!-- 历史战报 -->
+      <div class="boss-history-section">
+        <div class="card-title">历史战报</div>
+        <div class="boss-history-list" id="boss-history-list">
+          <div style="color:var(--muted);font-size:12px">暂无历史记录</div>
+        </div>
+      </div>
+
+    </div><!-- end page-boss -->
+
     <!-- ╔══ CHALLENGES ══╗ -->
     <div id="page-challenges" class="page">
       <div style="display:flex;align-items:center;gap:12px">
@@ -1257,6 +1686,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (page === 'history')      loadHistory();
     if (page === 'settings')     loadSettings();
     if (page === 'character')    loadCharacter();
+    if (page === 'boss')         loadBoss();
   });
 });
 
@@ -1386,6 +1816,10 @@ async function toggleHabit(habitId, cardEl) {
 
   if (result.new_achievements?.length) {
     result.new_achievements.forEach(a => showAchievementToast(a));
+  }
+
+  if (result.new_card) {
+    setTimeout(() => showCardToast(result.new_card), 600);
   }
 
   renderShields(result.shields ?? 0);
@@ -2177,6 +2611,213 @@ async function loadCharacter() {
   drawFieldLines(t.primary);
   initParticles();
   initCharCard3D();
+}
+
+// ═══════════════════════════════════════════════
+//  BOSS 战场
+// ═══════════════════════════════════════════════
+
+const CARD_CAT_ICONS = { study:'📚', exercise:'🏃', focus:'⚡', reflection:'✍️' };
+const RARITY_LABELS  = { common:'普通', rare:'稀有', epic:'传说' };
+const PHASE_LABELS   = { 1:'相位一：潜伏', 2:'相位二：觉醒', 3:'相位三：狂暴' };
+
+async function loadBoss() {
+  const [state, history] = await Promise.all([
+    API.get('/api/boss'),
+    API.get('/api/boss/history'),
+  ]);
+  renderBossArena(state);
+  renderPlayerPanel(state);
+  renderHand(state.cards_in_hand, state.boss_hp_max);
+  renderBattleLog(state.battle_log, state.boss_hp_max);
+  renderBossHistory(history);
+}
+
+function renderBossArena(state) {
+  const hpPct  = state.boss_hp_max > 0 ? Math.min(100, state.hp_remaining / state.boss_hp_max * 100) : 0;
+  const dmgPct = state.boss_hp_max > 0 ? Math.min(100, state.total_damage / state.boss_hp_max * 100) : 0;
+
+  // Icon & phase
+  const icon = document.getElementById('boss-page-icon');
+  icon.textContent = ['👹','😈','💀','👺','🐲','👁️'][
+    ['拖延魔君','惰性之鬼','懒散之王','荒废之神','借口之主','舒适恶魔'].indexOf(state.boss_name) % 6 || 0
+  ] || '👹';
+  icon.className = 'boss-icon ' + (state.won === false ? 'dead' :
+    state.boss_phase === 3 ? 'phase-3' : state.boss_phase === 2 ? 'phase-2' : '');
+
+  document.getElementById('boss-page-name').textContent  = state.boss_name;
+  document.getElementById('boss-phase-quote').textContent = state.phase_quote;
+
+  const phaseTag = document.getElementById('boss-phase-tag');
+  phaseTag.textContent  = PHASE_LABELS[state.boss_phase];
+  phaseTag.className    = 'boss-phase-tag p' + state.boss_phase;
+
+  // HP bar
+  document.getElementById('boss-hp-fill').style.width = hpPct + '%';
+  document.getElementById('boss-hp-fill').style.background =
+    hpPct < 25 ? 'linear-gradient(90deg,#ff0000,#ff3b30)' :
+    hpPct < 60 ? 'linear-gradient(90deg,#8b0000,#ff3b30,#ff6b35)' :
+                 'linear-gradient(90deg,#8b0000,#ff3b30,#ff6b35)';
+  document.getElementById('boss-hp-text').textContent =
+    state.hp_remaining + ' / ' + state.boss_hp_max;
+  document.getElementById('player-dmg-fill').style.width = dmgPct + '%';
+
+  // Numbers
+  document.getElementById('auto-dmg-num').textContent  = state.auto_damage;
+  document.getElementById('card-dmg-num').textContent  = state.card_damage;
+  document.getElementById('regen-num').textContent     = '+' + state.boss_regen;
+  document.getElementById('completion-rate-num').textContent = state.completion_rate + '%';
+
+  // Result banner
+  const banner = document.getElementById('boss-result-banner');
+  if (state.won === true) {
+    banner.className   = 'boss-result-banner won';
+    banner.style.display = 'block';
+    banner.textContent = '⚔️ BOSS 已斩杀！' +
+      (state.title_earned ? '  获得称号：' + state.title_earned : '') +
+      (state.exp_bonus    ? '  ＋' + state.exp_bonus + ' EXP'   : '');
+  } else if (state.won === false) {
+    banner.className   = 'boss-result-banner lost';
+    banner.style.display = 'block';
+    banner.textContent = '💀 本周讨伐失败，下周再战！';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function renderPlayerPanel(state) {
+  const s = state.player_stats;
+  [['str','💪',s.str], ['int','📚',s.int], ['agi','⚡',s.agi], ['wis','✍️',s.wis]].forEach(([key,,val]) => {
+    const fill = document.getElementById('stat-' + key);
+    const valEl = document.getElementById('stat-' + key + '-val');
+    if (fill) fill.style.width = val + '%';
+    if (valEl) valEl.textContent = val;
+  });
+  document.getElementById('boss-auto-atk').textContent = state.auto_damage + ' 点';
+  document.getElementById('boss-card-counts').textContent =
+    state.cards_played.length + ' / ' + (state.cards_in_hand.length + state.cards_played.length);
+}
+
+function renderHand(cards, bossHpMax) {
+  const grid = document.getElementById('hand-grid');
+  const badge = document.getElementById('hand-count-badge');
+  badge.textContent = cards.length + '张';
+
+  if (cards.length === 0) {
+    grid.innerHTML = '<div class="hand-empty">打卡后获得战斗卡牌<br><span style="font-size:10px;color:var(--muted)">每次打卡习惯即可获得一张</span></div>';
+    return;
+  }
+
+  grid.innerHTML = cards.map(c => `
+    <div class="battle-card ${c.rarity} ${c.card_type}" id="bc-${c.id}">
+      <div class="card-rarity-dot"></div>
+      <span class="card-category-icon">${CARD_CAT_ICONS[c.category] || '🃏'}</span>
+      <div class="card-name">${c.card_name}</div>
+      <div class="card-type-tag">${{attack:'攻击',skill:'技能',defense:'防御'}[c.card_type]}</div>
+      <div class="card-power">${c.power}</div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:4px">${RARITY_LABELS[c.rarity]}</div>
+      <button class="card-play-btn" onclick="playBossCard(${c.id}, this)">出牌</button>
+    </div>
+  `).join('');
+}
+
+async function playBossCard(cardId, btn) {
+  btn.disabled = true;
+  btn.textContent = '施放中...';
+  const cardEl = document.getElementById('bc-' + cardId);
+  if (cardEl) cardEl.classList.add('playing');
+
+  try {
+    const res = await API.post('/api/boss/play/' + cardId, {});
+    // Small delay for animation
+    setTimeout(() => {
+      renderBossArena(res.boss_state);
+      renderPlayerPanel(res.boss_state);
+      renderHand(res.boss_state.cards_in_hand, res.boss_state.boss_hp_max);
+      renderBattleLog(res.boss_state.battle_log, res.boss_state.boss_hp_max);
+    }, 520);
+  } catch(e) {
+    if (cardEl) cardEl.classList.remove('playing');
+    btn.disabled = false; btn.textContent = '出牌';
+  }
+}
+
+function renderBattleLog(log, hpMax) {
+  const el = document.getElementById('battle-log-rows');
+  if (!log || log.length === 0) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:12px">暂无数据</div>';
+    return;
+  }
+  const maxDmg = Math.max(...log.map(r => r.damage), 1);
+  el.innerHTML = log.map(row => {
+    const cls  = row.all_done ? 'log-win' : row.completed === 0 ? 'log-miss' : 'log-partial';
+    const dmgW = Math.round(row.damage  / maxDmg * 100);
+    const regW = hpMax > 0 ? Math.round(row.boss_regen / (hpMax * 0.15 || 1) * 100) : 0;
+    return `
+      <div class="battle-log-row ${cls}">
+        <span class="log-day">${row.weekday}</span>
+        <div class="log-bar-wrap">
+          <div class="log-bar-bg"><div class="log-bar-fill-dmg" style="width:${dmgW}%"></div></div>
+          ${row.boss_regen > 0 ? `<div class="log-bar-bg"><div class="log-bar-fill-reg" style="width:${Math.min(regW,100)}%"></div></div>` : ''}
+        </div>
+        <div class="log-nums">
+          <div class="log-dmg-num">+${row.damage}</div>
+          ${row.boss_regen > 0 ? `<div class="log-reg-num">回${row.boss_regen}</div>` : ''}
+          <div class="log-ratio">${row.completed}/${row.total}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderBossHistory(history) {
+  const el = document.getElementById('boss-history-list');
+  if (!history || history.length === 0) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">暂无历史记录，赢下第一场BOSS战吧！</div>';
+    return;
+  }
+  el.innerHTML = history.map(h => `
+    <div class="boss-history-row ${h.result}">
+      <span class="history-result-icon">${h.result === 'won' ? '⚔️' : '💀'}</span>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="history-boss-name">${h.boss_name}</span>
+          <span class="history-week">${h.week_start}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:2px">
+          <span class="history-rate">完成率 ${h.completion_rate}%</span>
+          ${h.title_earned ? `<span class="history-title">${h.title_earned}</span>` : ''}
+        </div>
+      </div>
+      ${h.exp_bonus > 0 ? `<span class="history-exp">+${h.exp_bonus} EXP</span>` : ''}
+    </div>
+  `).join('');
+}
+
+// ── 打卡得牌 Toast ────────────────────────────────────────────────────────────
+let _toastTimer = null;
+
+function showCardToast(card) {
+  let el = document.getElementById('card-toast-global');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'card-toast-global';
+    document.body.appendChild(el);
+  }
+  const icon = CARD_CAT_ICONS[card.card_type === 'attack' ? 'exercise' :
+    card.card_type === 'skill' ? 'focus' : 'reflection'] || '🃏';
+  el.className = 'card-toast';
+  el.innerHTML = `
+    <span class="toast-icon">${CARD_CAT_ICONS[card.category] || icon}</span>
+    <div class="toast-text">
+      <div class="toast-title">🃏 获得战斗卡牌</div>
+      <div class="toast-card-name ${card.rarity}">[${RARITY_LABELS[card.rarity]}] ${card.card_name}</div>
+      <div class="toast-power">威力 ${card.power} · ${card.card_effect}</div>
+    </div>`;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => {
+    el.classList.add('toast-out');
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 350);
+  }, 3500);
 }
 
 // ═══════════════════════════════════════════════

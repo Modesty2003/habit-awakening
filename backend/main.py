@@ -28,6 +28,9 @@ from backend.analytics import (
     detect_weak_habits,
     calculate_heatmap_data,
     calculate_checkin_time_distribution,
+    calculate_boss_state,
+    earn_card_data,
+    get_card_rarity,
 )
 from backend.achievements import check_and_unlock
 
@@ -146,6 +149,72 @@ def _maybe_earn_shield(conn, global_streak) -> bool:
         conn.commit()
         return True
     return False
+
+
+def _get_week_start(today: date) -> str:
+    return str(today - timedelta(days=today.weekday()))
+
+
+def _fetch_boss_cards(conn, week_start: str) -> tuple:
+    """Returns (cards_in_hand, cards_played) as lists of dicts."""
+    rows = conn.execute(
+        "SELECT * FROM battle_cards WHERE week_start=? ORDER BY earned_at",
+        (week_start,),
+    ).fetchall()
+    cards = [dict(r) for r in rows]
+    return (
+        [c for c in cards if not c["used"]],
+        [c for c in cards if c["used"]],
+    )
+
+
+def _earn_card(conn, habit: dict, streak: int, player_stats: dict, week_start: str) -> dict:
+    """Write a battle card to DB and return its data."""
+    card = earn_card_data(habit, streak, player_stats)
+    conn.execute(
+        """INSERT INTO battle_cards
+           (week_start, habit_id, habit_name, category, card_type, card_name,
+            card_effect, power, rarity)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (week_start, habit["id"], habit["name"], habit["category"],
+         card["card_type"], card["card_name"], card["card_effect"],
+         card["power"], card["rarity"]),
+    )
+    conn.commit()
+    return card
+
+
+def _finalize_last_week(conn, habits: list, logs: list, cat_stats: dict) -> None:
+    """Compute and store last week's boss battle result (idempotent via UNIQUE)."""
+    today = date.today()
+    last_week_start = today - timedelta(days=today.weekday() + 7)
+    ws = str(last_week_start)
+
+    # Already finalized?
+    if conn.execute("SELECT id FROM boss_battles WHERE week_start=?", (ws,)).fetchone():
+        return
+
+    cards_in_hand, cards_played = _fetch_boss_cards(conn, ws)
+    state = calculate_boss_state(logs, habits, cat_stats, cards_in_hand, cards_played, week_offset=1)
+
+    if not habits:
+        return
+
+    result = "won" if state["hp_remaining"] == 0 or state["total_damage"] >= state["boss_hp_max"] else "lost"
+    exp_bonus = state["exp_bonus"] if result == "won" else 0
+
+    conn.execute(
+        """INSERT OR IGNORE INTO boss_battles
+           (week_start, boss_name, boss_hp_max, auto_damage, card_damage,
+            result, completion_rate, exp_bonus, title_earned, finalized_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))""",
+        (ws, state["boss_name"], state["boss_hp_max"], state["auto_damage"],
+         state["card_damage"], result, state["completion_rate"],
+         exp_bonus, state["title_earned"]),
+    )
+    if result == "won" and exp_bonus > 0:
+        conn.execute("UPDATE users SET total_exp = total_exp + ? WHERE id=1", (exp_bonus,))
+    conn.commit()
 
 
 # ── API: 用户 ─────────────────────────────────────────────────────────────────
@@ -356,6 +425,17 @@ def toggle_checkin(habit_id: int):
 
             new_achievements = check_and_unlock(conn, logs_fresh, habits_fresh, user)
 
+            # ── 打卡得卡 ──────────────────────────────────────────────────────
+            cat_stats = calculate_category_stats(logs_fresh, habits_fresh, days=30)
+            player_stats = {
+                "str": cat_stats.get("exercise",   {}).get("score", 0),
+                "int": cat_stats.get("study",      {}).get("score", 0),
+                "agi": cat_stats.get("focus",      {}).get("score", 0),
+                "wis": cat_stats.get("reflection", {}).get("score", 0),
+            }
+            week_start = _get_week_start(today)
+            new_card = _earn_card(conn, habit, streak + 1, player_stats, week_start)
+
             user = _fetch_user(conn)  # re-fetch after possible shield update
             return {
                 "completed": True,
@@ -366,6 +446,7 @@ def toggle_checkin(habit_id: int):
                 "shield_used": shield_used,
                 "shield_earned": shield_earned,
                 "shields": user["shields"],
+                "new_card": new_card,
             }
     finally:
         conn.close()
@@ -545,6 +626,80 @@ def serve_asset(filename: str):
     if not os.path.exists(path):
         raise HTTPException(status_code=404, detail="Not found")
     return FileResponse(path)
+
+
+# ── API: BOSS 战 ──────────────────────────────────────────────────────────────
+
+@app.get("/api/boss")
+def get_boss():
+    conn = get_db()
+    try:
+        today = date.today()
+        habits = _fetch_habits(conn)
+        logs = _fetch_all_logs(conn, days=90)
+        cat_stats = calculate_category_stats(logs, habits, days=30)
+        week_start = _get_week_start(today)
+
+        cards_in_hand, cards_played = _fetch_boss_cards(conn, week_start)
+        state = calculate_boss_state(logs, habits, cat_stats, cards_in_hand, cards_played)
+
+        # Auto-finalize last week if needed
+        _finalize_last_week(conn, habits, logs, cat_stats)
+
+        return state
+    finally:
+        conn.close()
+
+
+@app.post("/api/boss/play/{card_id}")
+def play_card(card_id: int):
+    conn = get_db()
+    try:
+        today = date.today()
+        week_start = _get_week_start(today)
+
+        row = conn.execute(
+            "SELECT * FROM battle_cards WHERE id=? AND week_start=? AND used=0",
+            (card_id, week_start),
+        ).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Card not found or already played")
+
+        card = dict(row)
+        conn.execute(
+            "UPDATE battle_cards SET used=1, played_at=datetime('now') WHERE id=?",
+            (card_id,),
+        )
+        conn.commit()
+
+        # Return updated boss state
+        habits = _fetch_habits(conn)
+        logs = _fetch_all_logs(conn, days=90)
+        cat_stats = calculate_category_stats(logs, habits, days=30)
+        cards_in_hand, cards_played = _fetch_boss_cards(conn, week_start)
+        state = calculate_boss_state(logs, habits, cat_stats, cards_in_hand, cards_played)
+
+        return {
+            "ok": True,
+            "card": card,
+            "damage_dealt": card["power"],
+            "effect_desc": card["card_effect"],
+            "boss_state": state,
+        }
+    finally:
+        conn.close()
+
+
+@app.get("/api/boss/history")
+def get_boss_history():
+    conn = get_db()
+    try:
+        rows = conn.execute(
+            "SELECT * FROM boss_battles ORDER BY week_start DESC"
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
 
 
 # ── 静态文件 & SPA 兜底 ───────────────────────────────────────────────────────

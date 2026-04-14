@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import random
 
 
@@ -177,7 +177,7 @@ def calculate_category_stats(logs: list, habits: list, days: int = 30) -> Dict:
     return result
 
 
-# ── 每周 BOSS 战 ─────────────────────────────────────────────────────────────
+# ── 每周 BOSS 战（旧版，保留给 analytics 端点）───────────────────────────────
 
 BOSS_NAMES = [
     ("拖延魔君",    "时间总在手机屏幕里悄悄流逝"),
@@ -214,6 +214,266 @@ def calculate_weekly_boss(logs: list, habits: list, week_offset: int = 0) -> Dic
         "week_end": str(week_end),
         "target": 80,
         "days_passed": days_passed,
+    }
+
+
+# ── 卡牌 BOSS 战（新版）────────────────────────────────────────────────────────
+
+# 各 BOSS 对应的相位台词
+BOSS_PHASES = {
+    "拖延魔君": {
+        1: "「时间还多得很…」",
+        2: "「你…怎么还在坚持！」",
+        3: "「不可能！这不应该发生！」",
+    },
+    "惰性之鬼": {
+        1: "「等一下再做就好了…」",
+        2: "「你破了我的咒语？！」",
+        3: "「我的力量…正在消散…」",
+    },
+    "懒散之王": {
+        1: "「舒适区之外，一片虚无。」",
+        2: "「你…居然走出来了？！」",
+        3: "「我的王座…正在崩塌！」",
+    },
+    "荒废之神": {
+        1: "「虚度的时光让我愈发强大。」",
+        2: "「你的行动，正在灼烧我！」",
+        3: "「不…不要！我不愿消散！」",
+    },
+    "借口之主": {
+        1: "「你肯定有一千个理由放弃。」",
+        2: "「我的借口…失灵了？！」",
+        3: "「你不讲道理…！我服了！」",
+    },
+    "舒适恶魔": {
+        1: "「安逸是最美的牢笼，享受吧。」",
+        2: "「你…打破了我的结界？！」",
+        3: "「温暖的笼子…正在燃烧…」",
+    },
+}
+
+# 卡牌定义：分类 → (卡名, 类型, 效果描述, 基础威力系数)
+CARD_TEMPLATES = {
+    "study":      ("智识·爆发",  "attack",  "爆发伤害，INT驱动",    6),
+    "exercise":   ("力量·冲刺",  "attack",  "物理强攻，STR驱动",    8),
+    "focus":      ("时间·掌控",  "skill",   "能量聚焦，AGI驱动，暴击级输出", 7),
+    "reflection": ("意志·防壁",  "defense", "削弱BOSS回血，WIS驱动", 5),
+}
+
+RARITY_MULT = {"common": 1.0, "rare": 1.5, "epic": 2.0}
+RARITY_LABELS = {"common": "普通", "rare": "稀有", "epic": "传说"}
+
+
+def get_card_rarity(streak: int) -> str:
+    if streak >= 7:
+        return "epic"
+    if streak >= 3:
+        return "rare"
+    return "common"
+
+
+def earn_card_data(habit: dict, streak: int, player_stats: dict) -> dict:
+    """生成打卡奖励卡牌的数据（不写DB，仅计算）"""
+    cat = habit["category"]
+    template = CARD_TEMPLATES.get(cat, ("通用卡", "attack", "基础伤害", 5))
+    card_name, card_type, card_effect, power_coeff = template
+    rarity = get_card_rarity(streak)
+    mult = RARITY_MULT[rarity]
+
+    # 属性加成：按分类使用对应属性
+    stat_key = {"study": "int", "exercise": "str", "focus": "agi", "reflection": "wis"}.get(cat, "str")
+    stat_val = player_stats.get(stat_key, 50)
+
+    power = round((habit["base_exp"] / 20) * power_coeff * mult * (1 + stat_val / 200))
+    return {
+        "card_name":   card_name,
+        "card_type":   card_type,
+        "card_effect": card_effect,
+        "power":       power,
+        "rarity":      rarity,
+        "rarity_label": RARITY_LABELS[rarity],
+        "category":    cat,
+    }
+
+
+def calculate_boss_state(
+    logs: list,
+    habits: list,
+    cat_stats: dict,
+    cards_in_hand: list,
+    cards_played: list,
+    week_offset: int = 0,
+) -> dict:
+    """
+    完整 BOSS 战状态计算。
+    cards_in_hand / cards_played: 从 DB 查出的 battle_cards 记录列表。
+    """
+    today = date.today()
+    week_start = today - timedelta(days=today.weekday() + 7 * week_offset)
+    week_end = week_start + timedelta(days=6)
+    is_week_over = today > week_end
+
+    # ── BOSS 身份 ───────────────────────────────────────────────────────────────
+    wk = (today - date(2024, 1, 1)).days // 7 - week_offset
+    boss_name, boss_desc = BOSS_NAMES[wk % len(BOSS_NAMES)]
+
+    # ── 玩家属性（30日分类得分）─────────────────────────────────────────────────
+    player_stats = {
+        "str": cat_stats.get("exercise",   {}).get("score", 0),
+        "int": cat_stats.get("study",      {}).get("score", 0),
+        "agi": cat_stats.get("focus",      {}).get("score", 0),
+        "wis": cat_stats.get("reflection", {}).get("score", 0),
+    }
+    avg_stat = sum(player_stats.values()) / 4
+
+    # ── BOSS HP 校准（65%完成率=破防线，约55开）────────────────────────────────
+    if not habits:
+        return _empty_boss_state(boss_name, boss_desc, week_start, week_end)
+
+    avg_base_exp = sum(h["base_exp"] for h in habits) / len(habits)
+    stat_mult_avg = 1 + avg_stat / 200          # 平均属性加成
+    boss_hp_max = max(
+        50,
+        round(len(habits) * 7 * (avg_base_exp / 20) * stat_mult_avg * 0.65),
+    )
+
+    # ── 本周 logs ───────────────────────────────────────────────────────────────
+    days_passed = min((today - week_start).days + 1, 7)
+    habit_map = {h["id"]: h for h in habits}
+    habit_ids = {h["id"] for h in habits}
+
+    week_logs = [
+        l for l in logs
+        if week_start <= date.fromisoformat(l["date"]) <= week_end
+        and l["habit_id"] in habit_ids
+    ]
+
+    # ── 防御卡效果：削减 BOSS 回血系数 ─────────────────────────────────────────
+    defense_played = sum(1 for c in cards_played if c["card_type"] == "defense")
+    regen_mult = max(0.1, 1.0 - defense_played * 0.25)   # 每张防御卡削 25%，最低 10%
+
+    # ── 逐日伤害 & 回血计算 ─────────────────────────────────────────────────────
+    battle_log = []
+    total_auto_damage = 0
+    total_regen = 0
+    total_completed = 0
+    total_possible = len(habits) * days_passed
+
+    for i in range(days_passed):
+        d = week_start + timedelta(days=i)
+        date_str = str(d)
+        weekday = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"][d.weekday()]
+
+        day_logs = [l for l in week_logs if l["date"] == date_str]
+        completed_ids = {l["habit_id"] for l in day_logs if l["completed"]}
+        missed_ids = habit_ids - completed_ids
+
+        # 伤害：每个完成的习惯
+        day_damage = 0.0
+        for hid in completed_ids:
+            h = habit_map.get(hid)
+            if not h:
+                continue
+            base = h["base_exp"] / 20
+            cat = h["category"]
+            s = player_stats.get(
+                {"exercise": "str", "study": "int", "focus": "agi", "reflection": "wis"}.get(cat, "str"), 0
+            )
+            day_damage += base * (1 + s / 200)
+
+        # 回血：每个未完成的习惯
+        day_regen = 0.0
+        for hid in missed_ids:
+            h = habit_map.get(hid)
+            if h:
+                day_regen += (h["base_exp"] / 40) * regen_mult
+
+        total_auto_damage += day_damage
+        total_regen += day_regen
+        total_completed += len(completed_ids)
+
+        battle_log.append({
+            "date": date_str,
+            "weekday": weekday,
+            "damage": round(day_damage),
+            "boss_regen": round(day_regen),
+            "completed": len(completed_ids),
+            "total": len(habits),
+            "all_done": len(completed_ids) == len(habits) and len(habits) > 0,
+        })
+
+    # ── 手牌伤害 ────────────────────────────────────────────────────────────────
+    card_damage = sum(c["power"] for c in cards_played)
+
+    total_damage = round(total_auto_damage) + card_damage
+    hp_remaining = max(0, boss_hp_max - total_damage + round(total_regen))
+
+    # ── 完成率 & 相位 ───────────────────────────────────────────────────────────
+    completion_rate = round(total_completed / max(total_possible, 1) * 100)
+
+    phase_pct = hp_remaining / boss_hp_max if boss_hp_max > 0 else 1.0
+    boss_phase = 1 if phase_pct > 0.60 else 2 if phase_pct > 0.25 else 3
+    phase_quote = BOSS_PHASES.get(boss_name, {}).get(boss_phase, "")
+
+    # ── 胜负判断 ────────────────────────────────────────────────────────────────
+    won: Optional[bool] = None
+    if is_week_over or hp_remaining == 0:
+        won = hp_remaining == 0 or total_damage >= boss_hp_max
+
+    # ── 胜利奖励 ────────────────────────────────────────────────────────────────
+    exp_bonus = 0
+    title_earned = None
+    if won:
+        rate = completion_rate
+        bonus_mult = 1.0 if rate >= 95 else 0.8 if rate >= 85 else 0.6 if rate >= 75 else 0.4
+        exp_bonus = round(boss_hp_max * bonus_mult)
+        title_earned = (
+            "无下限的觉醒者" if rate >= 95 else
+            "精英BOSS猎手"   if rate >= 85 else
+            "顽强觉醒者"     if rate >= 75 else
+            "BOSS猎手"
+        )
+
+    return {
+        "boss_name":       boss_name,
+        "boss_desc":       boss_desc,
+        "boss_hp_max":     boss_hp_max,
+        "auto_damage":     round(total_auto_damage),
+        "card_damage":     card_damage,
+        "total_damage":    total_damage,
+        "boss_regen":      round(total_regen),
+        "hp_remaining":    hp_remaining,
+        "boss_phase":      boss_phase,
+        "phase_quote":     phase_quote,
+        "player_stats":    player_stats,
+        "cards_in_hand":   cards_in_hand,
+        "cards_played":    cards_played,
+        "completion_rate": completion_rate,
+        "is_week_over":    is_week_over,
+        "won":             won,
+        "exp_bonus":       exp_bonus,
+        "title_earned":    title_earned,
+        "week_start":      str(week_start),
+        "week_end":        str(week_end),
+        "days_passed":     days_passed,
+        "battle_log":      battle_log,
+        "defense_stacks":  defense_played,
+    }
+
+
+def _empty_boss_state(boss_name, boss_desc, week_start, week_end) -> dict:
+    return {
+        "boss_name": boss_name, "boss_desc": boss_desc,
+        "boss_hp_max": 0, "auto_damage": 0, "card_damage": 0,
+        "total_damage": 0, "boss_regen": 0, "hp_remaining": 0,
+        "boss_phase": 1, "phase_quote": "",
+        "player_stats": {"str": 0, "int": 0, "agi": 0, "wis": 0},
+        "cards_in_hand": [], "cards_played": [],
+        "completion_rate": 0, "is_week_over": False,
+        "won": None, "exp_bonus": 0, "title_earned": None,
+        "week_start": str(week_start), "week_end": str(week_end),
+        "days_passed": 0, "battle_log": [], "defense_stacks": 0,
     }
 
 

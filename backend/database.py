@@ -170,6 +170,37 @@ def init_db():
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (habit_id) REFERENCES habits(id)
         );
+
+        CREATE TABLE IF NOT EXISTS battle_cards (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            week_start TEXT NOT NULL,
+            habit_id INTEGER NOT NULL,
+            habit_name TEXT NOT NULL,
+            category TEXT NOT NULL,
+            card_type TEXT NOT NULL,
+            card_name TEXT NOT NULL,
+            card_effect TEXT NOT NULL,
+            power INTEGER NOT NULL,
+            rarity TEXT DEFAULT 'common',
+            used INTEGER DEFAULT 0,
+            played_at TEXT DEFAULT NULL,
+            earned_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS boss_battles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            week_start TEXT NOT NULL UNIQUE,
+            boss_name TEXT NOT NULL,
+            boss_hp_max INTEGER NOT NULL,
+            auto_damage INTEGER NOT NULL,
+            card_damage INTEGER NOT NULL,
+            result TEXT NOT NULL,
+            completion_rate INTEGER NOT NULL,
+            exp_bonus INTEGER DEFAULT 0,
+            title_earned TEXT DEFAULT NULL,
+            finalized_at TEXT DEFAULT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
     """)
 
     conn.commit()
